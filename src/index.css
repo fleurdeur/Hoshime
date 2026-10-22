@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-night: #0B0E14;
+    --surface-night: #131823;
+    --surface-night-elevated: #1B2232;
+    --border-night: #232B3E;
+    --accent-gold: #FFC107;
+    --accent-gold-glow: rgba(255, 193, 7, 0.35);
+    --accent-purple: #7C4DFF;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-night);
+    color: #F1F5F9;
+    overflow-x: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .font-mono, .tabular-nums {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Shimmer & glow utilities */
+@keyframes star-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 6px rgba(255, 193, 7, 0.5)); }
+  50% { transform: scale(1.12); opacity: 0.9; filter: drop-shadow(0 0 14px rgba(255, 193, 7, 0.85)); }
+}
+
+.animate-star-pulse {
+  animation: star-pulse 2.4s ease-in-out infinite;
+}
+

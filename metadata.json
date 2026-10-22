@@ -1,0 +1,6 @@
+{
+  "name": "Hoshime (星アニメ)",
+  "description": "Track your anime journey, rate by the stars. Complete anime diary, discovery, 0.5-5.0 star logger, custom lists, and social review platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

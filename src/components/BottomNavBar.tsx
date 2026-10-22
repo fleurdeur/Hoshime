@@ -87,7 +87,7 @@ export const BottomNavBar: React.FC = () => {
       >
         <User className={`w-5 h-5 transition-transform ${activeTab === 'profile' ? 'scale-110' : ''}`} />
         <span className="text-[11px] font-semibold tracking-normal mt-1 whitespace-nowrap">
-          Diary
+          Profile
         </span>
       </button>
     </nav>

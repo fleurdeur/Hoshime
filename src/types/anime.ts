@@ -118,6 +118,8 @@ export interface LogEntry {
   isBookmarked?: boolean;
   comments?: ReviewComment[];
   createdAt: string;
+  isArchived?: boolean;
+  updatedAt?: string;
 }
 
 export interface CustomListItem {

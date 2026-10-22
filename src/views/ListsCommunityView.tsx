@@ -13,6 +13,7 @@ import {
   X
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { UserAvatar } from '../components/UserAvatar';
 import { useApp } from '../context/AppContext';
 import { searchAnimeApi } from '../services/animeApi';
 import { Anime, CustomList, CustomListItem } from '../types/anime';
@@ -28,7 +29,8 @@ export const ListsCommunityView: React.FC = () => {
     selectedListId,
     setSelectedListId,
     getAnimeTitle,
-    userProfile
+    userProfile,
+    requireAuth
   } = useApp();
 
   const [isCreatingList, setIsCreatingList] = useState(false);
@@ -140,11 +142,10 @@ export const ListsCommunityView: React.FC = () => {
 
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img
+              <UserAvatar
                 src={activeList.author.avatar}
-                alt={activeList.author.name}
-                referrerPolicy="no-referrer"
-                className="w-8 h-8 rounded-full object-cover border border-amber-400/40"
+                name={activeList.author.name}
+                size="sm"
               />
               <span className="text-xs font-semibold text-slate-300">
                 Created by @{activeList.author.handle}
@@ -244,15 +245,18 @@ export const ListsCommunityView: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-display font-extrabold text-xl text-white">
-            Custom Lists & Community
+            Lists
           </h2>
           <p className="text-xs text-slate-400">
-            Curate thematic rankings, franchises, and recommendations
+            Browse and create curated anime collections
           </p>
         </div>
 
         <button
-          onClick={() => setIsCreatingList(true)}
+          onClick={() => {
+            if (!requireAuth('create a list')) return;
+            setIsCreatingList(true);
+          }}
           className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md active:scale-95 transition-all"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
@@ -270,11 +274,10 @@ export const ListsCommunityView: React.FC = () => {
           >
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
-                <img
+                <UserAvatar
                   src={list.author.avatar}
-                  alt={list.author.name}
-                  referrerPolicy="no-referrer"
-                  className="w-6 h-6 rounded-full object-cover"
+                  name={list.author.name}
+                  size="xs"
                 />
                 <span className="text-slate-300 font-medium">
                   @{list.author.handle}

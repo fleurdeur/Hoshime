@@ -60,7 +60,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
   onClose,
   isMandatoryAuth = false
 }) => {
-  const { login, signup, isAuthenticated } = useApp();
+  const { login, signup, enterGuestMode, isAuthenticated } = useApp();
 
   const [step, setStep] = useState<'welcome' | 'auth' | 'wizard_genres'>('welcome');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
@@ -108,7 +108,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
     setAuthError('');
 
     if (!username.trim()) {
-      setAuthError('Please enter your username or email');
+      setAuthError('Please enter your username');
       return;
     }
     if (!password.trim()) {
@@ -155,11 +155,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
   };
 
   const handleGuestLogin = () => {
-    signup({
-      username: 'Guest Critic',
-      email: 'guest@hoshime.app',
-      avatar: AVATAR_PRESETS[0].url
-    });
+    enterGuestMode();
     onClose();
   };
 
@@ -169,7 +165,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <img
           src="https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-ivXNJ23SM1xB.jpg"
-          alt="Official Anime Backdrop"
+          alt="Anime Backdrop"
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover opacity-20 scale-105"
         />
@@ -199,15 +195,15 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
 
             <div className="space-y-1.5">
               <h1 className="font-display font-extrabold text-3xl tracking-tight text-white">
-                Hoshime <span className="text-amber-400 font-normal">星アニメ</span>
+                Hoshime
               </h1>
-              <p className="text-sm font-medium text-amber-300/90 italic">
-                "Track your anime journey, rate by the stars."
+              <p className="text-sm font-medium text-amber-300/90">
+                Anime Diary & Review Tracker
               </p>
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed max-w-xs mx-auto">
-              Welcome to Hoshime! Journal your anime watches with 0.5-5.0 stars, curate your Top 3 favorites, and explore live catalogs powered by official AniList API.
+              Track your anime watches with 0.5 to 5.0 star ratings, choose your top favorites, and explore live titles.
             </p>
 
             <div className="space-y-2.5 pt-4">
@@ -218,7 +214,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                 }}
                 className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-bold text-sm shadow-[0_4px_20px_rgba(255,193,7,0.4)] hover:brightness-110 active:scale-95 transition-all"
               >
-                Log In to Your Account
+                Log In
               </button>
 
               <button
@@ -228,14 +224,14 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                 }}
                 className="w-full py-3 rounded-2xl bg-slate-900 border border-slate-800 text-slate-200 hover:text-white font-semibold text-xs hover:border-slate-700 transition-colors"
               >
-                Create New Fresh Account
+                Sign Up
               </button>
 
               <button
                 onClick={handleGuestLogin}
                 className="w-full py-2 text-xs text-slate-400 hover:text-amber-300 font-medium underline transition-colors"
               >
-                Continue as Guest Critic
+                Continue as Guest
               </button>
             </div>
           </div>
@@ -486,7 +482,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                 onClick={handleFinishSignup}
                 className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 font-extrabold text-sm shadow-[0_4px_25px_rgba(255,193,7,0.5)] hover:brightness-110 active:scale-95 transition-all"
               >
-                Launch Hoshime (星アニメ) 🚀
+                Get Started
               </button>
 
               <button

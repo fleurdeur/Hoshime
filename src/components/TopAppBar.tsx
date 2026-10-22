@@ -12,6 +12,7 @@ export const TopAppBar: React.FC = () => {
     setSelectedAnimeId,
     setSelectedListId,
     setSelectedUserProfile,
+    setIsNotificationsOpen,
     userProfile
   } = useApp();
 
@@ -32,12 +33,12 @@ export const TopAppBar: React.FC = () => {
         <button
           onClick={() => setIsDrawerOpen(true)}
           className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition-all"
-          aria-label="Open Navigation Drawer"
+          aria-label="Open Menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Brand Lockup */}
+        {/* Brand Lockup - Simple Name */}
         <button
           onClick={handleLogoClick}
           className="flex items-center gap-2.5 group text-left"
@@ -46,16 +47,11 @@ export const TopAppBar: React.FC = () => {
             <Sparkles className="w-4 h-4 text-slate-950 fill-slate-950" />
           </div>
           <div className="flex flex-col">
-            <div className="flex items-center gap-1.5 leading-tight">
-              <span className="font-display font-extrabold text-lg tracking-tight text-white">
-                Hoshime
-              </span>
-              <span className="text-xs font-semibold tracking-normal text-amber-300 bg-amber-400/15 px-1.5 py-0.5 rounded-md border border-amber-400/20">
-                星アニメ
-              </span>
-            </div>
-            <span className="text-xs text-slate-400 font-medium tracking-normal">
-              Rate by the stars
+            <span className="font-display font-extrabold text-lg tracking-tight text-white leading-tight">
+              Hoshime
+            </span>
+            <span className="text-[11px] text-slate-400 font-medium">
+              Anime Diary
             </span>
           </div>
         </button>
@@ -66,19 +62,14 @@ export const TopAppBar: React.FC = () => {
         <button
           onClick={() => setIsSearchOpen(true)}
           className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-300 hover:text-amber-400 active:scale-95 transition-colors"
-          aria-label="Global Search"
+          aria-label="Search"
         >
           <Search className="w-5 h-5" />
         </button>
 
         <button
           onClick={() => {
-            setSelectedAnimeId(null);
-            setSelectedListId(null);
-            setActiveTab('home');
-            // Can open notification center sheet
-            const event = new CustomEvent('hoshime_open_notifications');
-            window.dispatchEvent(event);
+            setIsNotificationsOpen(true);
           }}
           className="relative min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-300 hover:text-amber-400 active:scale-95 transition-colors"
           aria-label="Notifications"
@@ -99,7 +90,7 @@ export const TopAppBar: React.FC = () => {
             setActiveTab('profile');
           }}
           className="min-h-[44px] min-w-[44px] flex items-center justify-center pl-1 group"
-          aria-label="My Profile"
+          aria-label="Profile"
         >
           <UserAvatar
             src={userProfile.avatar}

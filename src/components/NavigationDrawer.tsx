@@ -1,12 +1,17 @@
 import {
+  Archive,
   BarChart3,
   Bookmark,
   Calendar,
+  Compass,
   Download,
   FileText,
   HelpCircle,
+  Home,
   Layers,
+  LogIn,
   LogOut,
+  MessageSquare,
   Moon,
   Settings,
   Sparkles,
@@ -28,12 +33,16 @@ export const NavigationDrawer: React.FC = () => {
     theme,
     setTheme,
     setActiveTab,
+    setProfileTab,
     setSelectedAnimeId,
     setSelectedListId,
     setSelectedUserProfile,
     setIsImportExportOpen,
     setIsWidgetsOpen,
     setIsOnboardingOpen,
+    setIsSettingsOpen,
+    isGuest,
+    openLoginPrompt,
     logout,
     currentDraft,
     openLogger
@@ -44,13 +53,27 @@ export const NavigationDrawer: React.FC = () => {
   const libraryEntries = Object.values(userLibrary);
   const completedCount = libraryEntries.filter((e) => e.status === 'Completed').length;
   const writtenReviewsCount = logs.filter((l) => l.userId === userProfile.id && l.reviewText).length;
+  const archivedCount = logs.filter((l) => l.userId === userProfile.id && l.isArchived).length;
   const totalDaysWatched = (
-    libraryEntries.reduce((acc, curr) => acc + (curr.episodesWatched * 24), 0) / (60 * 24)
+    libraryEntries.reduce((acc, curr) => acc + curr.episodesWatched * 24, 0) /
+    (60 * 24)
   ).toFixed(1);
 
   const navigateTo = (action: () => void) => {
     setIsDrawerOpen(false);
     action();
+  };
+
+  const handleGoToProfile = (subTab?: 'diary' | 'reviews' | 'watchlist' | 'lists' | 'stats' | 'archived') => {
+    navigateTo(() => {
+      setSelectedAnimeId(null);
+      setSelectedListId(null);
+      setSelectedUserProfile(null);
+      setActiveTab('profile');
+      if (subTab) {
+        setProfileTab(subTab);
+      }
+    });
   };
 
   return (
@@ -68,19 +91,21 @@ export const NavigationDrawer: React.FC = () => {
           <button
             onClick={() => setIsDrawerOpen(false)}
             className="absolute top-4 right-4 p-1 text-slate-400 hover:text-white"
-            aria-label="Close Drawer"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
 
           {/* User Profile Info */}
-          <div className="flex items-center gap-3 mb-3">
+          <div
+            onClick={() => handleGoToProfile('diary')}
+            className="flex items-center gap-3 mb-3 cursor-pointer group"
+          >
             <div className="relative">
-              <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-purple-500 to-amber-300 shadow-[0_0_12px_rgba(255,193,7,0.4)]">
+              <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-purple-500 to-amber-300 shadow-[0_0_12px_rgba(255,193,7,0.4)] flex items-center justify-center overflow-hidden">
                 <UserAvatar
                   src={userProfile.avatar}
                   name={userProfile.name}
-                  size="lg"
                   className="w-full h-full"
                 />
               </div>
@@ -93,14 +118,18 @@ export const NavigationDrawer: React.FC = () => {
 
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="font-display font-bold text-white text-base">
+                <span className="font-display font-bold text-white text-base group-hover:text-amber-400 transition-colors">
                   {userProfile.name}
                 </span>
-                {userProfile.isVip && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 bg-amber-400/20 text-amber-300 rounded border border-amber-400/30">
+                {isGuest ? (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded border border-slate-700">
+                    Guest
+                  </span>
+                ) : userProfile.isVip ? (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-amber-400/20 text-amber-300 rounded border border-amber-400/30">
                     VIP
                   </span>
-                )}
+                ) : null}
               </div>
               <span className="text-xs text-slate-400 font-mono">
                 @{userProfile.handle}
@@ -110,67 +139,116 @@ export const NavigationDrawer: React.FC = () => {
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-4 gap-1 pt-3 border-t border-slate-800/80 text-center">
-            <div className="flex flex-col">
+            <button
+              onClick={() => handleGoToProfile('watchlist')}
+              className="flex flex-col hover:bg-slate-800/40 p-1 rounded-lg transition-colors"
+            >
               <span className="font-mono text-sm font-bold text-amber-400 tabular-nums">
                 {completedCount}
               </span>
               <span className="text-[10px] text-slate-400 font-medium">Watched</span>
-            </div>
-            <div className="flex flex-col">
+            </button>
+            <button
+              onClick={() => handleGoToProfile('stats')}
+              className="flex flex-col hover:bg-slate-800/40 p-1 rounded-lg transition-colors"
+            >
               <span className="font-mono text-sm font-bold text-white tabular-nums">
                 {totalDaysWatched}d
               </span>
               <span className="text-[10px] text-slate-400 font-medium">Time</span>
-            </div>
-            <div className="flex flex-col">
+            </button>
+            <button
+              onClick={() => handleGoToProfile('reviews')}
+              className="flex flex-col hover:bg-slate-800/40 p-1 rounded-lg transition-colors"
+            >
               <span className="font-mono text-sm font-bold text-white tabular-nums">
                 {writtenReviewsCount}
               </span>
               <span className="text-[10px] text-slate-400 font-medium">Reviews</span>
-            </div>
-            <div className="flex flex-col">
+            </button>
+            <button
+              onClick={() => handleGoToProfile('diary')}
+              className="flex flex-col hover:bg-slate-800/40 p-1 rounded-lg transition-colors"
+            >
               <span className="font-mono text-sm font-bold text-white tabular-nums">
                 {userProfile.followersCount}
               </span>
               <span className="text-[10px] text-slate-400 font-medium">Followers</span>
-            </div>
+            </button>
           </div>
         </div>
 
         {/* Drawer Menu Navigation */}
         <div className="flex-1 py-3 px-3 space-y-1 text-sm text-slate-300 font-medium">
+          {/* Feed */}
           <button
             onClick={() =>
               navigateTo(() => {
                 setSelectedAnimeId(null);
                 setSelectedListId(null);
                 setSelectedUserProfile(null);
-                setActiveTab('profile');
+                setActiveTab('home');
               })
             }
-            className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+            className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
           >
-            <User className="w-4 h-4 text-amber-400" />
-            <span>My Profile & The Star 4</span>
+            <Home className="w-4 h-4 text-amber-400" />
+            <span>Feed</span>
           </button>
 
+          {/* Explore */}
           <button
             onClick={() =>
               navigateTo(() => {
                 setSelectedAnimeId(null);
                 setSelectedListId(null);
-                setActiveTab('profile');
-                // set tab to watchlist
-                const evt = new CustomEvent('hoshime_profile_tab', { detail: 'watchlist' });
-                window.dispatchEvent(evt);
+                setSelectedUserProfile(null);
+                setActiveTab('discover');
               })
             }
-            className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+            className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
           >
-            <Bookmark className="w-4 h-4 text-slate-400" />
-            <span>My Watchlist</span>
+            <Compass className="w-4 h-4 text-blue-400" />
+            <span>Explore</span>
           </button>
 
+          {/* Profile */}
+          <button
+            onClick={() => handleGoToProfile('diary')}
+            className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+          >
+            <User className="w-4 h-4 text-amber-400" />
+            <span>Profile</span>
+          </button>
+
+          {/* Watchlist */}
+          <button
+            onClick={() => handleGoToProfile('watchlist')}
+            className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+          >
+            <Bookmark className="w-4 h-4 text-slate-400" />
+            <span>Watchlist</span>
+          </button>
+
+          {/* Diary */}
+          <button
+            onClick={() => handleGoToProfile('diary')}
+            className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+          >
+            <Calendar className="w-4 h-4 text-emerald-400" />
+            <span>Diary</span>
+          </button>
+
+          {/* Reviews */}
+          <button
+            onClick={() => handleGoToProfile('reviews')}
+            className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+          >
+            <MessageSquare className="w-4 h-4 text-pink-400" />
+            <span>Reviews</span>
+          </button>
+
+          {/* Custom Lists */}
           <button
             onClick={() =>
               navigateTo(() => {
@@ -179,42 +257,35 @@ export const NavigationDrawer: React.FC = () => {
                 setActiveTab('lists');
               })
             }
-            className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+            className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
           >
             <Layers className="w-4 h-4 text-purple-400" />
-            <span>My Custom Lists</span>
+            <span>Lists</span>
           </button>
 
+          {/* Stats */}
           <button
-            onClick={() =>
-              navigateTo(() => {
-                setSelectedAnimeId(null);
-                setSelectedListId(null);
-                setActiveTab('profile');
-                const evt = new CustomEvent('hoshime_profile_tab', { detail: 'diary' });
-                window.dispatchEvent(evt);
-              })
-            }
-            className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+            onClick={() => handleGoToProfile('stats')}
+            className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
           >
-            <Calendar className="w-4 h-4 text-emerald-400" />
-            <span>Viewing Diary & Timeline</span>
+            <BarChart3 className="w-4 h-4 text-cyan-400" />
+            <span>Stats</span>
           </button>
 
+          {/* Archived Posts */}
           <button
-            onClick={() =>
-              navigateTo(() => {
-                setSelectedAnimeId(null);
-                setSelectedListId(null);
-                setActiveTab('profile');
-                const evt = new CustomEvent('hoshime_profile_tab', { detail: 'stats' });
-                window.dispatchEvent(evt);
-              })
-            }
-            className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+            onClick={() => handleGoToProfile('archived')}
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
           >
-            <BarChart3 className="w-4 h-4 text-blue-400" />
-            <span>Detailed Analytics & Stats</span>
+            <div className="flex items-center gap-3.5">
+              <Archive className="w-4 h-4 text-amber-500" />
+              <span>Archived</span>
+            </div>
+            {archivedCount > 0 && (
+              <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300">
+                {archivedCount}
+              </span>
+            )}
           </button>
 
           <div className="h-px bg-slate-800/80 my-2" />
@@ -226,34 +297,30 @@ export const NavigationDrawer: React.FC = () => {
                 setIsImportExportOpen(true);
               })
             }
-            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
           >
             <div className="flex items-center gap-3.5">
               <Download className="w-4 h-4 text-amber-400" />
-              <span>Import / Export Data</span>
+              <span>Import & Export</span>
             </div>
-            <span className="text-[10px] text-slate-500 font-mono">MAL · AniList</span>
           </button>
 
-          {/* Android Home Screen Widgets */}
+          {/* Widgets */}
           <button
             onClick={() =>
               navigateTo(() => {
                 setIsWidgetsOpen(true);
               })
             }
-            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
           >
             <div className="flex items-center gap-3.5">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Android Glance Widgets</span>
+              <span>Widgets</span>
             </div>
-            <span className="text-[10px] font-semibold text-amber-400/90 bg-amber-400/10 px-1.5 py-0.5 rounded">
-              3 Widgets
-            </span>
           </button>
 
-          {/* Drafts Manager */}
+          {/* Drafts */}
           {currentDraft && (
             <button
               onClick={() =>
@@ -261,11 +328,11 @@ export const NavigationDrawer: React.FC = () => {
                   openLogger(currentDraft.animeId);
                 })
               }
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 hover:bg-amber-400/20 transition-colors"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 hover:bg-amber-400/20 transition-colors"
             >
               <div className="flex items-center gap-3.5">
                 <FileText className="w-4 h-4 text-amber-400" />
-                <span>Saved Draft</span>
+                <span>Draft</span>
               </div>
               <span className="text-[10px] font-bold underline">Resume</span>
             </button>
@@ -275,7 +342,7 @@ export const NavigationDrawer: React.FC = () => {
 
           {/* Theme Switcher */}
           <div className="px-3 py-2">
-            <span className="text-xs text-slate-500 font-medium block mb-2">Theme Mode</span>
+            <span className="text-xs text-slate-500 font-medium block mb-2">Theme</span>
             <div className="grid grid-cols-3 gap-1 p-1 bg-slate-900 rounded-lg border border-slate-800 text-xs">
               <button
                 onClick={() => setTheme('dark')}
@@ -284,7 +351,7 @@ export const NavigationDrawer: React.FC = () => {
                 }`}
               >
                 <Moon className="w-3.5 h-3.5" />
-                <span>Night</span>
+                <span>Dark</span>
               </button>
               <button
                 onClick={() => setTheme('starry')}
@@ -309,48 +376,62 @@ export const NavigationDrawer: React.FC = () => {
 
           <div className="h-px bg-slate-800/80 my-2" />
 
-          {/* Settings & Onboarding Demo */}
+          {/* Settings */}
           <button
             onClick={() =>
               navigateTo(() => {
-                const evt = new CustomEvent('hoshime_open_settings');
-                window.dispatchEvent(evt);
+                setIsSettingsOpen(true);
               })
             }
-            className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+            className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
           >
             <Settings className="w-4 h-4 text-slate-400" />
-            <span>Settings & Preferences</span>
+            <span>Settings</span>
           </button>
 
+          {/* Help */}
           <button
             onClick={() =>
               navigateTo(() => {
                 setIsOnboardingOpen(true);
               })
             }
-            className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
+            className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl hover:bg-slate-800/60 hover:text-white transition-colors"
           >
             <HelpCircle className="w-4 h-4 text-slate-400" />
-            <span>Onboarding Wizard / Help</span>
+            <span>Help</span>
           </button>
 
-          <button
-            onClick={() => {
-              setIsDrawerOpen(false);
-              logout();
-            }}
-            className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out & Switch Account</span>
-          </button>
+          {/* Sign Out or Log In */}
+          {isGuest ? (
+            <button
+              onClick={() => {
+                setIsDrawerOpen(false);
+                openLoginPrompt('access account features');
+              }}
+              className="w-full flex items-center justify-center gap-2 mt-2 px-3 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold transition-all shadow-md active:scale-95"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Log In or Sign Up</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setIsDrawerOpen(false);
+                logout();
+              }}
+              className="w-full flex items-center gap-3.5 px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Log Out</span>
+            </button>
+          )}
         </div>
 
         {/* Drawer Footer */}
         <div className="p-4 border-t border-slate-800 text-center">
           <span className="text-[11px] text-slate-500 font-mono">
-            Hoshime for Android · v2.6.4 (Build 408)
+            Hoshime v2.6
           </span>
         </div>
       </aside>

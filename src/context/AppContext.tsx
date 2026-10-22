@@ -66,8 +66,28 @@ interface AppContextType {
   setSelectedListId: (id: string | null) => void;
   setSelectedUserProfile: (profile: UserProfile | null) => void;
   setIsSearchOpen: (open: boolean) => void;
-  openLogger: (animeId?: string | null) => void;
+  isGuest: boolean;
+  enterGuestMode: () => void;
+  isLoginPromptOpen: boolean;
+  loginPromptReason: string;
+  openLoginPrompt: (reason?: string) => void;
+  closeLoginPrompt: () => void;
+  requireAuth: (actionDescription?: string) => boolean;
+
+  profileTab: 'diary' | 'reviews' | 'watchlist' | 'lists' | 'stats' | 'archived';
+  setProfileTab: (tab: 'diary' | 'reviews' | 'watchlist' | 'lists' | 'stats' | 'archived') => void;
+
+  isSettingsOpen: boolean;
+  setIsSettingsOpen: (open: boolean) => void;
+  isNotificationsOpen: boolean;
+  setIsNotificationsOpen: (open: boolean) => void;
+
+  editingLog: LogEntry | null;
+  openLogger: (animeId?: string | null, logToEdit?: LogEntry | null) => void;
   closeLogger: () => void;
+  editLog: (logId: string, updates: Partial<LogEntry>) => void;
+  deleteLog: (logId: string) => void;
+  archiveLog: (logId: string) => void;
   setIsDrawerOpen: (open: boolean) => void;
   openShareStory: (log: LogEntry) => void;
   closeShareStory: () => void;
@@ -249,6 +269,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isWidgetsOpen, setIsWidgetsOpen] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  // Guest mode and Auth state
+  const [isGuest, setIsGuest] = useState<boolean>(() => {
+    return localStorage.getItem('hoshime_is_guest') === 'true';
+  });
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+  const [loginPromptReason, setLoginPromptReason] = useState('');
+  const [profileTab, setProfileTab] = useState<'diary' | 'reviews' | 'watchlist' | 'lists' | 'stats' | 'archived'>('diary');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [editingLog, setEditingLog] = useState<LogEntry | null>(null);
 
   const [currentDraft, setCurrentDraft] = useState<DraftLog | null>(() => {
     const saved = localStorage.getItem('hoshime_draft_log');
@@ -335,6 +365,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('hoshime_device_mode', mode);
   };
 
+  const openLoginPrompt = (reason?: string) => {
+    setLoginPromptReason(reason || 'Guests cannot create or edit posts and profiles. Please log in or sign up.');
+    setIsLoginPromptOpen(true);
+  };
+
+  const closeLoginPrompt = () => {
+    setIsLoginPromptOpen(false);
+    setLoginPromptReason('');
+  };
+
+  const requireAuth = (actionDescription?: string): boolean => {
+    if (isGuest || !isAuthenticated) {
+      openLoginPrompt(
+        actionDescription
+          ? `Guests cannot ${actionDescription}. Please log in or create an account.`
+          : 'Guests cannot make changes. Please log in or create an account.'
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const enterGuestMode = () => {
+    setIsGuest(true);
+    setIsAuthenticated(true);
+    localStorage.setItem('hoshime_is_guest', 'true');
+    localStorage.setItem('hoshime_is_authenticated', 'true');
+    setUserProfile({
+      id: 'guest_user',
+      name: 'Guest',
+      handle: 'guest',
+      avatar: 'https://s4.anilist.co/file/anilistcdn/character/large/b178491-j5YF6uP7tE0s.png',
+      banner: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-ivXNJ23SM1xB.jpg',
+      bio: 'Browsing in Guest Mode.',
+      joinedDate: 'Guest Mode',
+      isVip: false,
+      star4: [],
+      followersCount: 0,
+      followingCount: 0
+    });
+  };
+
   const login = (credentials: { username: string; email?: string; avatar?: string }) => {
     const handle = credentials.username.toLowerCase().replace(/[^a-z0-9_]/g, '_') || 'user';
     const updatedProfile: UserProfile = {
@@ -344,7 +416,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatar: credentials.avatar || userProfile.avatar || 'https://s4.anilist.co/file/anilistcdn/character/large/b178491-j5YF6uP7tE0s.png'
     };
     setUserProfile(updatedProfile);
+    setIsGuest(false);
     setIsAuthenticated(true);
+    localStorage.removeItem('hoshime_is_guest');
     localStorage.setItem('hoshime_is_authenticated', 'true');
     localStorage.setItem('hoshime_user_profile', JSON.stringify(updatedProfile));
   };
@@ -370,7 +444,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUserLibrary({});
     setLogs([]);
     setCustomLists([]);
+    setIsGuest(false);
     setIsAuthenticated(true);
+    localStorage.removeItem('hoshime_is_guest');
     localStorage.setItem('hoshime_is_authenticated', 'true');
     localStorage.setItem('hoshime_user_profile', JSON.stringify(newProfile));
     localStorage.setItem('hoshime_user_library', JSON.stringify({}));
@@ -379,7 +455,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logout = () => {
+    setIsGuest(false);
     setIsAuthenticated(false);
+    localStorage.removeItem('hoshime_is_guest');
     localStorage.removeItem('hoshime_is_authenticated');
   };
 
@@ -392,6 +470,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const clearAllData = () => {
     localStorage.clear();
+    setIsGuest(false);
     setIsAuthenticated(false);
     setUserProfile(INITIAL_USER_PROFILE);
     setUserLibrary({});
@@ -408,14 +487,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return titleObj.english || titleObj.romaji || titleObj.native;
   };
 
-  const openLogger = (animeId?: string | null) => {
-    setLoggerAnimeId(animeId || null);
+  const openLogger = (animeId?: string | null, logToEdit?: LogEntry | null) => {
+    if (!requireAuth(logToEdit ? 'edit posts' : 'create posts')) return;
+    setLoggerAnimeId(animeId || (logToEdit ? logToEdit.animeId : null));
+    setEditingLog(logToEdit || null);
     setIsLoggerOpen(true);
   };
 
   const closeLogger = () => {
     setIsLoggerOpen(false);
     setLoggerAnimeId(null);
+    setEditingLog(null);
+  };
+
+  const editLog = (logId: string, updates: Partial<LogEntry>) => {
+    if (!requireAuth('edit posts')) return;
+    setLogs((prev) =>
+      prev.map((l) =>
+        l.id === logId
+          ? { ...l, ...updates, updatedAt: new Date().toISOString() }
+          : l
+      )
+    );
+  };
+
+  const deleteLog = (logId: string) => {
+    if (!requireAuth('delete posts')) return;
+    setLogs((prev) => prev.filter((l) => l.id !== logId));
+  };
+
+  const archiveLog = (logId: string) => {
+    if (!requireAuth('archive posts')) return;
+    setLogs((prev) =>
+      prev.map((l) =>
+        l.id === logId ? { ...l, isArchived: !l.isArchived } : l
+      )
+    );
   };
 
   const openShareStory = (log: LogEntry) => {
@@ -429,6 +536,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateWatchStatus = (animeId: string, status: WatchStatus, ep?: number, score?: number) => {
+    if (!requireAuth('update your watchlist')) return;
     const anime = animeList.find(a => a.id === animeId);
     const existing = userLibrary[animeId] || {
       animeId,
@@ -457,6 +565,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleStarFavorite = (animeId: string) => {
+    if (!requireAuth('favorite anime')) return;
     setUserLibrary(prev => {
       const existing = prev[animeId] || {
         animeId,
@@ -479,6 +588,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateStar4 = (animeIds: string[]) => {
+    if (!requireAuth('customize favorite anime')) return;
     setUserProfile(prev => ({
       ...prev,
       star4: animeIds.slice(0, 4)
@@ -486,6 +596,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateUserProfile = (profileUpdates: Partial<UserProfile>) => {
+    if (!requireAuth('edit your profile')) return;
     setUserProfile(prev => ({
       ...prev,
       ...profileUpdates
@@ -507,6 +618,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     syncMAL?: boolean;
     postToFeed?: boolean;
   }) => {
+    if (!requireAuth(editingLog ? 'edit posts' : 'create posts')) return;
     const anime = animeList.find(a => a.id === entryData.animeId);
     if (!anime) return;
 
@@ -534,7 +646,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
     });
 
-    // 2. Add Log Entry if posting to feed (default true)
+    // 2. If editing existing log, update in place
+    if (editingLog) {
+      editLog(editingLog.id, {
+        rating: entryData.rating,
+        isLike: entryData.isLike,
+        episodeLogged: entryData.episodeLogged,
+        isRewatch: entryData.isRewatch,
+        rewatchCount: entryData.rewatchCount,
+        dateWatched: entryData.dateWatched,
+        reviewText: entryData.reviewText,
+        hasSpoilers: entryData.hasSpoilers,
+        tags: entryData.tags
+      });
+      clearDraftLog();
+      closeLogger();
+      return;
+    }
+
+    // 3. Otherwise add Log Entry if posting to feed (default true)
     if (entryData.postToFeed !== false) {
       const newLog: LogEntry = {
         id: `log_${Date.now()}`,
@@ -582,6 +712,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const likeLog = (logId: string) => {
+    if (!requireAuth('like posts')) return;
     setLogs(prev =>
       prev.map(item => {
         if (item.id === logId) {
@@ -598,6 +729,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const repostLog = (logId: string) => {
+    if (!requireAuth('repost')) return;
     setLogs(prev =>
       prev.map(item => {
         if (item.id === logId) {
@@ -612,6 +744,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const bookmarkLog = (logId: string) => {
+    if (!requireAuth('bookmark posts')) return;
     setLogs(prev =>
       prev.map(item => {
         if (item.id === logId) {
@@ -626,6 +759,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addCommentToLog = (logId: string, text: string) => {
+    if (!requireAuth('leave comments')) return;
     if (!text.trim()) return;
     setLogs(prev =>
       prev.map(item => {
@@ -658,6 +792,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     bannerCover?: string;
     items: { animeId: string; rank?: number; commentary?: string }[];
   }) => {
+    if (!requireAuth('create custom lists')) return;
     const newList: CustomList = {
       id: `list_${Date.now()}`,
       title: data.title,
@@ -680,12 +815,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateCustomList = (listId: string, updates: Partial<CustomList>) => {
+    if (!requireAuth('update custom lists')) return;
     setCustomLists(prev =>
       prev.map(list => (list.id === listId ? { ...list, ...updates } : list))
     );
   };
 
   const likeCustomList = (listId: string) => {
+    if (!requireAuth('like lists')) return;
     setCustomLists(prev =>
       prev.map(list => {
         if (list.id === listId) {
@@ -797,6 +934,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loadMoreAnime,
         addAnimeToDatabase,
         isAuthenticated,
+        isGuest,
+        enterGuestMode,
+        isLoginPromptOpen,
+        loginPromptReason,
+        openLoginPrompt,
+        closeLoginPrompt,
+        requireAuth,
+        profileTab,
+        setProfileTab,
+        isSettingsOpen,
+        setIsSettingsOpen,
+        isNotificationsOpen,
+        setIsNotificationsOpen,
+        editingLog,
+        editLog,
+        deleteLog,
+        archiveLog,
         login,
         signup,
         logout,

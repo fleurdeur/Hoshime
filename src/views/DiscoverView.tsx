@@ -62,11 +62,11 @@ export const DiscoverView: React.FC = () => {
 
   const filterChips = [
     'Top Rated',
-    'Trending Now',
-    'Seasonal Guide',
-    'Upcoming Airing',
-    'Anime Movies',
-    'Studio Showcase'
+    'Trending',
+    'Seasonal',
+    'Upcoming',
+    'Movies',
+    'Studios'
   ];
 
   // Studio showcase list
@@ -181,7 +181,7 @@ export const DiscoverView: React.FC = () => {
         ))}
       </div>
 
-      {/* 4. RANDOM ANIME GENERATOR BUTTON ("Roll the Hoshime Star Wheel!") */}
+      {/* 4. RANDOM ANIME GENERATOR */}
       <div className="p-4 rounded-3xl bg-gradient-to-r from-purple-900/30 via-[#161C2C] to-amber-900/20 border border-purple-500/30 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-amber-400 flex items-center justify-center text-slate-950 shadow-[0_0_15px_rgba(124,77,255,0.4)]">
@@ -189,10 +189,10 @@ export const DiscoverView: React.FC = () => {
           </div>
           <div>
             <h3 className="font-display font-bold text-sm text-white">
-              Can't decide what to watch next?
+              Random Anime
             </h3>
             <p className="text-xs text-slate-400">
-              Roll the Hoshime Star Wheel for instant recommendation!
+              Get an instant random anime recommendation
             </p>
           </div>
         </div>
@@ -201,7 +201,7 @@ export const DiscoverView: React.FC = () => {
           onClick={handleOpenWheel}
           className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md active:scale-95 transition-all whitespace-nowrap"
         >
-          Roll Wheel
+          Pick Random
         </button>
       </div>
 
@@ -211,7 +211,7 @@ export const DiscoverView: React.FC = () => {
           <div className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-amber-400" />
             <h3 className="font-display font-bold text-base text-white">
-              Popular This Season
+              Popular Anime
             </h3>
           </div>
           <button
@@ -317,7 +317,7 @@ export const DiscoverView: React.FC = () => {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-400" />
             <h3 className="font-display font-bold text-base text-white">
-              All Anime Catalog
+              All Anime
             </h3>
             <span className="text-[10px] font-mono text-amber-400/90 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
               {animeList.length} Titles
@@ -328,7 +328,7 @@ export const DiscoverView: React.FC = () => {
             onClick={() => setIsSearchOpen(true)}
             className="text-xs text-amber-400 hover:underline font-semibold"
           >
-            Filter & Search
+            Search
           </button>
         </div>
 
@@ -369,7 +369,7 @@ export const DiscoverView: React.FC = () => {
           ))}
         </div>
 
-        {/* Load More Button via live API */}
+        {/* Load More Button */}
         <div className="pt-2 flex justify-center">
           <button
             onClick={() => loadMoreAnime({ page: Math.floor(animeList.length / 30) + 1 })}
@@ -379,12 +379,12 @@ export const DiscoverView: React.FC = () => {
             {isLoadingAnime ? (
               <>
                 <RotateCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Loading official titles from AniList API...</span>
+                <span>Loading...</span>
               </>
             ) : (
               <>
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Fetch More Anime from Official Database</span>
+                <span>Load More Anime</span>
               </>
             )}
           </button>

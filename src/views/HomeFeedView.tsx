@@ -11,11 +11,16 @@ import {
   Send,
   Share2,
   Sparkles,
-  Trophy
+  Archive,
+  Edit3,
+  Trash2,
+  AlertTriangle,
+  X
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { AnimeImage } from '../components/AnimeImage';
 import { StarRating } from '../components/StarRating';
+import { UserAvatar } from '../components/UserAvatar';
 import { useApp } from '../context/AppContext';
 import { LogEntry } from '../types/anime';
 
@@ -31,13 +36,18 @@ export const HomeFeedView: React.FC = () => {
     getAnimeTitle,
     openLogger,
     setActiveTab,
-    userProfile
+    userProfile,
+    isGuest,
+    archiveLog,
+    deleteLog
   } = useApp();
 
   const [feedTab, setFeedTab] = useState<'following' | 'global' | 'friends'>('following');
   const [revealedSpoilers, setRevealedSpoilers] = useState<Record<string, boolean>>({});
   const [activeCommentLogId, setActiveCommentLogId] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState('');
+  const [activeMenuLogId, setActiveMenuLogId] = useState<string | null>(null);
+  const [deleteConfirmLogId, setDeleteConfirmLogId] = useState<string | null>(null);
 
   const toggleSpoiler = (logId: string) => {
     setRevealedSpoilers((prev) => ({
@@ -89,91 +99,136 @@ export const HomeFeedView: React.FC = () => {
       </div>
 
       {/* FEED CONTENT */}
-      {logs.length === 0 ? (
-        <div className="py-16 px-4 text-center rounded-3xl bg-[#111622]/60 border border-slate-800/80 space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-amber-400/10 border border-amber-400/20 mx-auto flex items-center justify-center text-amber-400">
-            <Sparkles className="w-7 h-7" />
-          </div>
-          <div>
-            <h3 className="font-display font-bold text-base text-white">Your Feed is Ready</h3>
-            <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">
-              No reviews logged yet. Tap the star button to log your first anime rating or explore official catalog!
-            </p>
-          </div>
-          <div className="flex items-center justify-center gap-2 pt-2">
-            <button
-              onClick={() => openLogger()}
-              className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95"
-            >
-              + Log Anime Now
-            </button>
-            <button
-              onClick={() => setActiveTab('discover')}
-              className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 hover:text-white text-xs font-semibold"
-            >
-              Explore Catalog
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {logs.map((log) => {
-            const isSpoilerRevealed = revealedSpoilers[log.id];
+      {(() => {
+        const visibleLogs = logs.filter((l) => !l.isArchived);
 
-            return (
-              <article
-                key={log.id}
-                className="p-4 sm:p-5 rounded-3xl bg-[#111622] border border-slate-800/80 shadow-md space-y-3.5"
-              >
-              {/* User Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="relative">
-                    <img
+        if (visibleLogs.length === 0) {
+          return (
+            <div className="py-16 px-4 text-center rounded-3xl bg-[#111622]/60 border border-slate-800/80 space-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-amber-400/10 border border-amber-400/20 mx-auto flex items-center justify-center text-amber-400">
+                <Sparkles className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-base text-white">No Posts Yet</h3>
+                <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">
+                  Log your first anime rating or explore the catalog to share your thoughts!
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <button
+                  onClick={() => openLogger()}
+                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95"
+                >
+                  Log Anime
+                </button>
+                <button
+                  onClick={() => setActiveTab('discover')}
+                  className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 hover:text-white text-xs font-semibold"
+                >
+                  Explore
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="space-y-4">
+            {visibleLogs.map((log) => {
+              const isSpoilerRevealed = revealedSpoilers[log.id];
+              const isOP = !isGuest && (log.userId === userProfile.id || log.userHandle === userProfile.handle);
+
+              return (
+                <article
+                  key={log.id}
+                  className="p-4 sm:p-5 rounded-3xl bg-[#111622] border border-slate-800/80 shadow-md space-y-3.5 relative"
+                >
+                {/* User Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <UserAvatar
                       src={log.userAvatar}
-                      alt={log.userName}
-                      referrerPolicy="no-referrer"
-                      className="w-10 h-10 rounded-full object-cover border border-slate-700"
+                      name={log.userName}
+                      size="sm"
                     />
-                    {log.isVip && (
-                      <div className="absolute -bottom-1 -right-1 bg-amber-400 rounded-full p-0.5">
-                        <Sparkles className="w-2.5 h-2.5 text-slate-950" />
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-white text-sm">
+                          {log.userName}
+                        </span>
+                        <span className="text-xs text-slate-400 font-mono">
+                          @{log.userHandle}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                        <span className="text-slate-400">{log.createdAt}</span>
+                        <span aria-hidden="true">·</span>
+                        {log.isRewatch ? (
+                          <span className="text-purple-300 font-semibold">
+                            Rewatched (#{log.rewatchCount + 1})
+                          </span>
+                        ) : (
+                          <span className="text-emerald-400 font-semibold">Watched</span>
+                        )}
+                        {log.updatedAt && (
+                          <span className="text-[10px] text-slate-500 font-mono">(edited)</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 relative">
+                    <StarRating rating={log.rating} size="sm" showScoreText={true} />
+                    
+                    {/* Strictly to the OP: Edit, Archive, and Delete */}
+                    {isOP && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setActiveMenuLogId(activeMenuLogId === log.id ? null : log.id)}
+                          className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                          aria-label="Post Actions"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {activeMenuLogId === log.id && (
+                          <div className="absolute right-0 top-8 z-30 w-36 rounded-2xl bg-[#0E121B] border border-slate-800 p-1.5 shadow-xl space-y-1">
+                            <button
+                              onClick={() => {
+                                setActiveMenuLogId(null);
+                                openLogger(log.animeId, log);
+                              }}
+                              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-amber-300 transition-colors"
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setActiveMenuLogId(null);
+                                archiveLog(log.id);
+                              }}
+                              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-amber-300 transition-colors"
+                            >
+                              <Archive className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Archive</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setActiveMenuLogId(null);
+                                setDeleteConfirmLogId(log.id);
+                              }}
+                              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium text-rose-400 hover:bg-rose-500/10 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-white text-sm">
-                        {log.userName}
-                      </span>
-                      <span className="text-xs text-slate-400 font-mono">
-                        @{log.userHandle}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-                      <span className="text-slate-400">{log.createdAt}</span>
-                      <span aria-hidden="true">·</span>
-                      {log.isRewatch ? (
-                        <span className="text-purple-300 font-semibold">
-                          Rewatched (#{log.rewatchCount + 1})
-                        </span>
-                      ) : (
-                        <span className="text-emerald-400 font-semibold">Watched</span>
-                      )}
-                    </div>
-                  </div>
                 </div>
-
-                <div className="flex items-center gap-1.5">
-                  <StarRating rating={log.rating} size="sm" showScoreText={true} />
-                  <button
-                    className="p-1 text-slate-400 hover:text-white"
-                    aria-label="Options"
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
 
               {/* Anime Content Row */}
               <div
@@ -388,6 +443,45 @@ export const HomeFeedView: React.FC = () => {
               </article>
             );
           })}
+        </div>
+      );
+    })()}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmLogId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="relative w-full max-w-sm rounded-3xl bg-[#111622] border border-slate-800 p-5 shadow-2xl space-y-4 text-white">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 mx-auto flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <div className="text-center space-y-1">
+              <h3 className="font-display font-bold text-base text-white">
+                Delete Post?
+              </h3>
+              <p className="text-xs text-slate-400">
+                Are you sure you want to delete this post? This cannot be undone.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmLogId(null)}
+                className="flex-1 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteLog(deleteConfirmLogId);
+                  setDeleteConfirmLogId(null);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-xs font-bold text-white shadow-md transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

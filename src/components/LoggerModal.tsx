@@ -28,7 +28,8 @@ export const LoggerModal: React.FC = () => {
     saveDraftLog,
     currentDraft,
     clearDraftLog,
-    getAnimeTitle
+    getAnimeTitle,
+    editingLog
   } = useApp();
 
   const [selectedAnimeId, setSelectedAnimeId] = useState<string>(
@@ -58,10 +59,31 @@ export const LoggerModal: React.FC = () => {
   const [syncMAL, setSyncMAL] = useState(true);
   const [postToFeed, setPostToFeed] = useState(true);
 
-  // Load draft if matches or when opened
+  // Load editing log or draft if matches or when opened
   useEffect(() => {
-    if (loggerAnimeId) {
+    if (editingLog) {
+      setSelectedAnimeId(editingLog.animeId);
+      setRating(editingLog.rating);
+      setIsLike(editingLog.isLike);
+      setReviewText(editingLog.reviewText || '');
+      setIsRewatch(editingLog.isRewatch);
+      setRewatchCount(editingLog.rewatchCount || 1);
+      setHasSpoilers(editingLog.hasSpoilers);
+      setTags(editingLog.tags || []);
+      setDateWatched(editingLog.dateWatched);
+      if (editingLog.episodeLogged) {
+        setLogType('episode');
+        setEpisodeLogged(editingLog.episodeLogged);
+      } else {
+        setLogType('entire');
+      }
+    } else if (loggerAnimeId) {
       setSelectedAnimeId(loggerAnimeId);
+      setRating(5.0);
+      setReviewText('');
+      setIsRewatch(false);
+      setHasSpoilers(false);
+      setTags(['#Masterpiece']);
     } else if (currentDraft) {
       setSelectedAnimeId(currentDraft.animeId);
       setRating(currentDraft.rating);
@@ -71,7 +93,7 @@ export const LoggerModal: React.FC = () => {
       setTags(currentDraft.tags);
       setDateWatched(currentDraft.dateWatched);
     }
-  }, [loggerAnimeId, currentDraft, isLoggerOpen]);
+  }, [loggerAnimeId, currentDraft, isLoggerOpen, editingLog]);
 
   // Debounced API search for anime picker
   useEffect(() => {
@@ -173,7 +195,7 @@ export const LoggerModal: React.FC = () => {
               <Sparkles className="w-4 h-4" />
             </div>
             <h3 className="font-display font-bold text-white text-base">
-              Log Anime Entry
+              {editingLog ? 'Edit Post' : 'Log Anime'}
             </h3>
           </div>
           <button
@@ -580,14 +602,18 @@ export const LoggerModal: React.FC = () => {
 
         {/* Action Buttons Footer */}
         <div className="p-4 border-t border-slate-800 bg-[#0E121B] flex items-center justify-between gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
-          >
-            <FileText className="w-3.5 h-3.5 text-slate-400" />
-            <span>Save Draft</span>
-          </button>
+          {!editingLog ? (
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+            >
+              <FileText className="w-3.5 h-3.5 text-slate-400" />
+              <span>Save Draft</span>
+            </button>
+          ) : (
+            <div />
+          )}
 
           <div className="flex items-center gap-2">
             <button
@@ -595,7 +621,7 @@ export const LoggerModal: React.FC = () => {
               onClick={closeLogger}
               className="px-3.5 py-2 text-xs font-medium text-slate-400 hover:text-white rounded-xl transition-colors"
             >
-              Discard
+              Cancel
             </button>
             <button
               type="button"
@@ -603,7 +629,7 @@ export const LoggerModal: React.FC = () => {
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-xs shadow-[0_2px_12px_rgba(255,193,7,0.35)] active:scale-95 transition-all"
             >
               <Check className="w-4 h-4 stroke-[2.5]" />
-              <span>Publish Entry</span>
+              <span>{editingLog ? 'Save Changes' : 'Publish'}</span>
             </button>
           </div>
         </div>

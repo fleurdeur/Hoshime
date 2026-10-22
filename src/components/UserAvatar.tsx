@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface UserAvatarProps {
   src?: string;
@@ -25,10 +25,10 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 
   const getInitials = (n: string) => {
     const parts = n.trim().split(/\s+/);
-    if (parts.length >= 2) {
+    if (parts.length >= 2 && parts[0] && parts[1]) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
-    return n.slice(0, 2).toUpperCase() || 'H';
+    return n.trim().slice(0, 2).toUpperCase() || 'U';
   };
 
   const getSizeClasses = () => {
@@ -47,10 +47,16 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     }
   };
 
+  const hasExplicitDimensions = /\b(w-\S+|h-\S+)/.test(className);
+
   return (
-    <div className={`relative inline-block shrink-0 ${className}`}>
+    <div
+      className={`relative inline-flex items-center justify-center shrink-0 ${
+        hasExplicitDimensions ? '' : getSizeClasses()
+      } ${className}`}
+    >
       <div
-        className={`rounded-full overflow-hidden flex items-center justify-center font-bold font-display select-none border border-amber-400/30 ${getSizeClasses()} ${
+        className={`w-full h-full rounded-full overflow-hidden flex items-center justify-center font-bold font-display select-none border border-amber-400/30 ${
           hasError || !src
             ? 'bg-gradient-to-tr from-amber-500 via-purple-600 to-indigo-600 text-white shadow-md'
             : 'bg-slate-900'
@@ -62,15 +68,17 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
             alt={name}
             referrerPolicy="no-referrer"
             onError={() => setHasError(true)}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center rounded-full block"
           />
         ) : (
-          <span>{getInitials(name)}</span>
+          <span className="leading-none text-center flex items-center justify-center w-full h-full select-none">
+            {getInitials(name)}
+          </span>
         )}
       </div>
 
       {showVip && (
-        <div className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 p-0.5 rounded-full shadow">
+        <div className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 p-0.5 rounded-full shadow-md z-10">
           <Sparkles className="w-2.5 h-2.5 fill-slate-950" />
         </div>
       )}

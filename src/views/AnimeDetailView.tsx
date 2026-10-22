@@ -20,6 +20,7 @@ import {
 import React, { useState } from 'react';
 import { AnimeImage } from '../components/AnimeImage';
 import { StarRating } from '../components/StarRating';
+import { UserAvatar } from '../components/UserAvatar';
 import { useApp } from '../context/AppContext';
 import { WatchStatus } from '../types/anime';
 
@@ -530,11 +531,10 @@ export const AnimeDetailView: React.FC<AnimeDetailViewProps> = ({ animeId, onBac
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <img
+                      <UserAvatar
                         src={rev.userAvatar}
-                        alt={rev.userName}
-                        referrerPolicy="no-referrer"
-                        className="w-7 h-7 rounded-full object-cover"
+                        name={rev.userName}
+                        size="sm"
                       />
                       <span className="font-bold text-white">{rev.userName}</span>
                       <span className="text-slate-500 font-mono">@{rev.userHandle}</span>

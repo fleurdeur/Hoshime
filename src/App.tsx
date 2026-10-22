@@ -18,6 +18,8 @@ import { OnboardingView } from './views/OnboardingView';
 import { ProfileView } from './views/ProfileView';
 import { SettingsView } from './views/SettingsView';
 
+import { LoginPromptModal } from './components/LoginPromptModal';
+
 const MainAppContent: React.FC = () => {
   const {
     activeTab,
@@ -27,26 +29,13 @@ const MainAppContent: React.FC = () => {
     setIsSearchOpen,
     isOnboardingOpen,
     setIsOnboardingOpen,
+    isNotificationsOpen,
+    setIsNotificationsOpen,
+    isSettingsOpen,
+    setIsSettingsOpen,
     isAuthenticated,
     theme
   } = useApp();
-
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  // Listen for custom events dispatched from TopAppBar / Drawer
-  useEffect(() => {
-    const handleOpenNotifs = () => setIsNotificationsOpen(true);
-    const handleOpenSettings = () => setIsSettingsOpen(true);
-
-    window.addEventListener('hoshime_open_notifications', handleOpenNotifs);
-    window.addEventListener('hoshime_open_settings', handleOpenSettings);
-
-    return () => {
-      window.removeEventListener('hoshime_open_notifications', handleOpenNotifs);
-      window.removeEventListener('hoshime_open_settings', handleOpenSettings);
-    };
-  }, []);
 
   // Login First: Force authentication gate if user has no active session
   if (!isAuthenticated) {
@@ -128,6 +117,7 @@ const MainAppContent: React.FC = () => {
           isOpen={isOnboardingOpen}
           onClose={() => setIsOnboardingOpen(false)}
         />
+        <LoginPromptModal />
       </AndroidFrame>
     </div>
   );

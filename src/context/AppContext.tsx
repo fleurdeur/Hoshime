@@ -34,6 +34,7 @@ interface DraftLog {
 interface AppContextType {
   animeList: Anime[];
   isLoadingAnime: boolean;
+  isAuthenticated: boolean;
   userProfile: UserProfile;
   userLibrary: Record<string, UserAnimeEntry>;
   logs: LogEntry[];
@@ -79,8 +80,12 @@ interface AppContextType {
   setAccentColor: (color: AccentColor) => void;
   setAdultFilter: (enabled: boolean) => void;
   loadMoreAnime: (params?: { search?: string; genre?: string; page?: number }) => Promise<void>;
+  addAnimeToDatabase: (anime: Anime) => void;
 
   // Domain Actions
+  login: (credentials: { username: string; email?: string; avatar?: string }) => void;
+  signup: (credentials: { username: string; email?: string; avatar?: string }) => void;
+  logout: () => void;
   getAnimeTitle: (animeOrTitle: Anime | AnimeTitle | undefined) => string;
   updateWatchStatus: (animeId: string, status: WatchStatus, ep?: number, score?: number) => void;
   toggleStarFavorite: (animeId: string) => void;
@@ -122,6 +127,7 @@ interface AppContextType {
   importLibrary: (source: string, count: number, overwrite: boolean) => void;
   exportLibrary: (format: 'json' | 'csv') => void;
   clearCache: () => void;
+  clearAllData: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -134,12 +140,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [isLoadingAnime, setIsLoadingAnime] = useState<boolean>(false);
 
+  // Require login first: authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('hoshime_is_authenticated') === 'true';
+  });
+
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('hoshime_user_profile');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.avatar?.includes('unsplash.com') || parsed.banner?.includes('unsplash.com')) {
+        if (parsed.handle === 'astral_ryo' || parsed.name === 'AstralReviewer' || parsed.avatar?.includes('unsplash.com') || parsed.banner?.includes('unsplash.com')) {
           return INITIAL_USER_PROFILE;
         }
         return parsed;
@@ -150,61 +161,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return INITIAL_USER_PROFILE;
   });
 
+  // Fresh user library: starts empty for new authentic accounts
   const [userLibrary, setUserLibrary] = useState<Record<string, UserAnimeEntry>>(() => {
     const saved = localStorage.getItem('hoshime_user_library');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.frieren || parsed['bocchi-the-rock']) {
-          // Old schema with slug IDs, reset to official AniList IDs
-          return {
-            '154587': {
-              animeId: '154587',
-              status: 'Completed',
-              episodesWatched: 28,
-              score: 5.0,
-              isFavorite: true,
-              rewatchCount: 1,
-              finishDate: '2026-10-18',
-              updatedAt: '2026-10-18'
-            },
-            '9253': {
-              animeId: '9253',
-              status: 'Completed',
-              episodesWatched: 24,
-              score: 5.0,
-              isFavorite: true,
-              rewatchCount: 2,
-              updatedAt: '2026-09-12'
-            }
-          };
+          return {};
         }
         return parsed;
       } catch {
-        // Fallback
+        return {};
       }
     }
-    return {
-      '154587': {
-        animeId: '154587',
-        status: 'Completed',
-        episodesWatched: 28,
-        score: 5.0,
-        isFavorite: true,
-        rewatchCount: 1,
-        finishDate: '2026-10-18',
-        updatedAt: '2026-10-18'
-      },
-      '9253': {
-        animeId: '9253',
-        status: 'Completed',
-        episodesWatched: 24,
-        score: 5.0,
-        isFavorite: true,
-        rewatchCount: 2,
-        updatedAt: '2026-09-12'
-      }
-    };
+    return {};
   });
 
   // Remove ALL pre-made dummy logs so the user has an authentic clean slate
@@ -213,16 +184,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!saved) return [];
     try {
       const parsed: LogEntry[] = JSON.parse(saved);
-      // Filter out previous dummy mock logs (log_1, log_2, log_3) and unsplash references
-      const realUserLogs = parsed.filter(
+      return parsed.filter(
         (l) =>
+          l.userHandle !== 'astral_ryo' &&
           l.id !== 'log_1' &&
           l.id !== 'log_2' &&
           l.id !== 'log_3' &&
-          !l.id.startsWith('mock_') &&
-          !l.animeCover?.includes('unsplash.com')
+          !l.id.startsWith('mock_')
       );
-      return realUserLogs;
     } catch {
       return [];
     }
@@ -233,15 +202,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (saved) {
       try {
         const parsed: CustomList[] = JSON.parse(saved);
-        if (parsed.some((l) => l.bannerCover?.includes('unsplash.com'))) {
-          return INITIAL_CUSTOM_LISTS;
-        }
-        return parsed;
+        return parsed.filter((l: any) => l.author?.handle !== 'astral_ryo' && l.id !== 'list_1');
       } catch {
-        return INITIAL_CUSTOM_LISTS;
+        return [];
       }
     }
-    return INITIAL_CUSTOM_LISTS;
+    return [];
   });
 
   const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
@@ -367,6 +333,71 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const setDeviceMode = (mode: 'android-frame' | 'responsive') => {
     setDeviceModeState(mode);
     localStorage.setItem('hoshime_device_mode', mode);
+  };
+
+  const login = (credentials: { username: string; email?: string; avatar?: string }) => {
+    const handle = credentials.username.toLowerCase().replace(/[^a-z0-9_]/g, '_') || 'user';
+    const updatedProfile: UserProfile = {
+      ...userProfile,
+      name: credentials.username,
+      handle,
+      avatar: credentials.avatar || userProfile.avatar || 'https://s4.anilist.co/file/anilistcdn/character/large/b178491-j5YF6uP7tE0s.png'
+    };
+    setUserProfile(updatedProfile);
+    setIsAuthenticated(true);
+    localStorage.setItem('hoshime_is_authenticated', 'true');
+    localStorage.setItem('hoshime_user_profile', JSON.stringify(updatedProfile));
+  };
+
+  const signup = (credentials: { username: string; email?: string; avatar?: string }) => {
+    const handle = credentials.username.toLowerCase().replace(/[^a-z0-9_]/g, '_') || 'user';
+    const newProfile: UserProfile = {
+      id: `usr_${Date.now()}`,
+      name: credentials.username,
+      handle,
+      avatar: credentials.avatar || 'https://s4.anilist.co/file/anilistcdn/character/large/b178491-j5YF6uP7tE0s.png',
+      banner: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-ivXNJ23SM1xB.jpg',
+      bio: '',
+      website: '',
+      pronouns: '',
+      joinedDate: 'Joined 2026',
+      isVip: false,
+      star4: [],
+      followersCount: 0,
+      followingCount: 0
+    };
+    setUserProfile(newProfile);
+    setUserLibrary({});
+    setLogs([]);
+    setCustomLists([]);
+    setIsAuthenticated(true);
+    localStorage.setItem('hoshime_is_authenticated', 'true');
+    localStorage.setItem('hoshime_user_profile', JSON.stringify(newProfile));
+    localStorage.setItem('hoshime_user_library', JSON.stringify({}));
+    localStorage.setItem('hoshime_logs', JSON.stringify([]));
+    localStorage.setItem('hoshime_custom_lists', JSON.stringify([]));
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('hoshime_is_authenticated');
+  };
+
+  const addAnimeToDatabase = (anime: Anime) => {
+    setAnimeList((prev) => {
+      if (prev.some((a) => a.id === anime.id)) return prev;
+      return [anime, ...prev];
+    });
+  };
+
+  const clearAllData = () => {
+    localStorage.clear();
+    setIsAuthenticated(false);
+    setUserProfile(INITIAL_USER_PROFILE);
+    setUserLibrary({});
+    setLogs([]);
+    setCustomLists([]);
+    window.location.reload();
   };
 
   const getAnimeTitle = (animeOrTitle: Anime | AnimeTitle | undefined): string => {
@@ -764,6 +795,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         animeList,
         isLoadingAnime,
         loadMoreAnime,
+        addAnimeToDatabase,
+        isAuthenticated,
+        login,
+        signup,
+        logout,
+        clearAllData,
         userProfile,
         userLibrary,
         logs,

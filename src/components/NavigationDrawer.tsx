@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import { UserAvatar } from './UserAvatar';
 
 export const NavigationDrawer: React.FC = () => {
   const {
@@ -33,6 +34,7 @@ export const NavigationDrawer: React.FC = () => {
     setIsImportExportOpen,
     setIsWidgetsOpen,
     setIsOnboardingOpen,
+    logout,
     currentDraft,
     openLogger
   } = useApp();
@@ -74,12 +76,12 @@ export const NavigationDrawer: React.FC = () => {
           {/* User Profile Info */}
           <div className="flex items-center gap-3 mb-3">
             <div className="relative">
-              <div className="w-14 h-14 rounded-full overflow-hidden p-0.5 bg-gradient-to-tr from-amber-400 via-purple-500 to-amber-300 shadow-[0_0_12px_rgba(255,193,7,0.4)]">
-                <img
+              <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-purple-500 to-amber-300 shadow-[0_0_12px_rgba(255,193,7,0.4)]">
+                <UserAvatar
                   src={userProfile.avatar}
-                  alt={userProfile.name}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover rounded-full"
+                  name={userProfile.name}
+                  size="lg"
+                  className="w-full h-full"
                 />
               </div>
               {userProfile.isVip && (
@@ -334,15 +336,14 @@ export const NavigationDrawer: React.FC = () => {
           </button>
 
           <button
-            onClick={() =>
-              navigateTo(() => {
-                setIsOnboardingOpen(true);
-              })
-            }
+            onClick={() => {
+              setIsDrawerOpen(false);
+              logout();
+            }}
             className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            <span>Switch Account / Sign Out</span>
+            <span>Sign Out & Switch Account</span>
           </button>
         </div>
 

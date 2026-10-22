@@ -1,6 +1,7 @@
 import { Bell, Menu, Search, Sparkles } from 'lucide-react';
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import { UserAvatar } from './UserAvatar';
 
 export const TopAppBar: React.FC = () => {
   const {
@@ -100,14 +101,12 @@ export const TopAppBar: React.FC = () => {
           className="min-h-[44px] min-w-[44px] flex items-center justify-center pl-1 group"
           aria-label="My Profile"
         >
-          <div className="w-7 h-7 rounded-full overflow-hidden border border-amber-400/40 group-hover:border-amber-400 transition-colors">
-            <img
-              src={userProfile.avatar}
-              alt={userProfile.name}
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <UserAvatar
+            src={userProfile.avatar}
+            name={userProfile.name}
+            size="sm"
+            className="group-hover:scale-105 transition-transform"
+          />
         </button>
       </div>
     </header>

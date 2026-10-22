@@ -4,20 +4,24 @@ import {
   Globe,
   Heart,
   Layers,
+  Loader2,
   Lock,
   Plus,
+  Search,
   Share2,
   Trash2,
   X
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { CustomList, CustomListItem } from '../types/anime';
+import { searchAnimeApi } from '../services/animeApi';
+import { Anime, CustomList, CustomListItem } from '../types/anime';
 
 export const ListsCommunityView: React.FC = () => {
   const {
     customLists,
     animeList,
+    addAnimeToDatabase,
     createCustomList,
     likeCustomList,
     setSelectedAnimeId,
@@ -32,18 +36,43 @@ export const ListsCommunityView: React.FC = () => {
   const [description, setDescription] = useState('');
   const [isRanked, setIsRanked] = useState(true);
   const [privacy, setPrivacy] = useState<'public' | 'unlisted' | 'private'>('public');
-  const [selectedItems, setSelectedItems] = useState<CustomListItem[]>([
-    { animeId: '154587', commentary: 'A transcendent journey through time and emotions.' },
-    { animeId: '9253', commentary: 'The highest peak of sci-fi psychological thrillers.' }
-  ]);
+  const [selectedItems, setSelectedItems] = useState<CustomListItem[]>([]);
   const [searchToAdd, setSearchToAdd] = useState('');
+  const [apiSearchResults, setApiSearchResults] = useState<Anime[]>([]);
+  const [isSearchingApi, setIsSearchingApi] = useState(false);
+
+  // Debounced search for adding anime to list
+  useEffect(() => {
+    const clean = searchToAdd.trim();
+    if (!clean) {
+      setApiSearchResults([]);
+      setIsSearchingApi(false);
+      return;
+    }
+
+    setIsSearchingApi(true);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const results = await searchAnimeApi(clean, 10);
+        setApiSearchResults(results);
+      } catch (e) {
+        console.warn('Custom list anime search error:', e);
+      } finally {
+        setIsSearchingApi(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchToAdd]);
 
   const activeList = customLists.find((l) => l.id === selectedListId);
 
-  const handleAddItem = (animeId: string) => {
-    if (!selectedItems.some((i) => i.animeId === animeId)) {
-      setSelectedItems([...selectedItems, { animeId, commentary: '' }]);
+  const handleAddItem = (anime: Anime) => {
+    addAnimeToDatabase(anime);
+    if (!selectedItems.some((i) => i.animeId === anime.id)) {
+      setSelectedItems([...selectedItems, { animeId: anime.id, commentary: '' }]);
       setSearchToAdd('');
+      setApiSearchResults([]);
     }
   };
 
@@ -342,25 +371,60 @@ export const ListsCommunityView: React.FC = () => {
                 />
               </div>
 
-              {/* Add Anime Search */}
+              {/* Add Anime Search via Live API */}
               <div>
                 <label className="text-slate-400 font-semibold block mb-1">
-                  Add Anime to List
+                  Add Anime to List (Search AniList API)
                 </label>
-                <select
-                  value=""
-                  onChange={(e) => handleAddItem(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none"
-                >
-                  <option value="" disabled>
-                    Select an anime to add...
-                  </option>
-                  {animeList.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {getAnimeTitle(a)}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-900 border border-slate-800 focus-within:border-amber-400">
+                    <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="Search anime to add (e.g. Frieren, Steins;Gate)..."
+                      value={searchToAdd}
+                      onChange={(e) => setSearchToAdd(e.target.value)}
+                      className="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
+                    />
+                    {isSearchingApi && <Loader2 className="w-4 h-4 text-amber-400 animate-spin shrink-0" />}
+                  </div>
+
+                  {/* Search Results Dropdown */}
+                  {searchToAdd.trim() && (
+                    <div className="mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-xl p-1.5 max-h-48 overflow-y-auto space-y-1">
+                      {apiSearchResults.length > 0 ? (
+                        apiSearchResults.map((a) => (
+                          <button
+                            key={a.id}
+                            type="button"
+                            onClick={() => handleAddItem(a)}
+                            className="w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-slate-800 text-left transition-colors"
+                          >
+                            <img
+                              src={a.coverImage}
+                              alt={getAnimeTitle(a)}
+                              referrerPolicy="no-referrer"
+                              className="w-7 h-9 object-cover rounded shrink-0"
+                            />
+                            <div className="truncate flex-1">
+                              <span className="text-xs font-semibold text-white block truncate">
+                                {getAnimeTitle(a)}
+                              </span>
+                              <span className="text-[10px] text-slate-400">
+                                {a.year} · {a.format} · ★ {a.score.toFixed(1)}
+                              </span>
+                            </div>
+                            <Plus className="w-4 h-4 text-amber-400 shrink-0" />
+                          </button>
+                        ))
+                      ) : !isSearchingApi ? (
+                        <div className="py-2 text-center text-xs text-slate-500">
+                          No anime found
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Selected Items with commentary & reordering */}

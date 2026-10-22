@@ -4,8 +4,10 @@ import {
   Globe,
   HardDrive,
   Laptop,
+  LogOut,
   Moon,
   Palette,
+  RotateCcw,
   Shield,
   Smartphone,
   Sparkles,
@@ -15,6 +17,7 @@ import {
   X
 } from 'lucide-react';
 import React, { useState } from 'react';
+import { UserAvatar } from '../components/UserAvatar';
 import { useApp } from '../context/AppContext';
 import { AccentColor, AppTheme, TitleFormat } from '../types/anime';
 
@@ -36,6 +39,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isOpen, onClose }) =
     deviceMode,
     setDeviceMode,
     clearCache,
+    clearAllData,
+    logout,
     userProfile
   } = useApp();
 
@@ -254,6 +259,48 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isOpen, onClose }) =
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Reset Cache</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 6. ACCOUNT & SESSION */}
+          <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+            <div className="flex items-center gap-2 text-slate-200 font-bold">
+              <User className="w-4 h-4 text-amber-400" />
+              <span>Account & Session</span>
+            </div>
+
+            <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-800/60 border border-slate-700/60">
+              <UserAvatar src={userProfile.avatar} name={userProfile.name} size="md" />
+              <div className="truncate flex-1">
+                <span className="font-bold text-white text-xs block truncate">{userProfile.name}</span>
+                <span className="text-[10px] text-slate-400 font-mono">@{userProfile.handle}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  logout();
+                }}
+                className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-rose-400 font-bold flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Log Out</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('Are you sure? This will wipe all data and return to a fresh start.')) {
+                    clearAllData();
+                  }
+                }}
+                className="py-2.5 px-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-bold flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Factory Reset</span>
               </button>
             </div>
           </div>

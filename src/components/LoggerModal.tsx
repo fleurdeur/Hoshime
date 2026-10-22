@@ -4,6 +4,7 @@ import {
   ChevronDown,
   FileText,
   Heart,
+  Loader2,
   Plus,
   RotateCcw,
   Search,
@@ -12,6 +13,8 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { searchAnimeApi } from '../services/animeApi';
+import { Anime } from '../types/anime';
 import { StarRating } from './StarRating';
 
 export const LoggerModal: React.FC = () => {
@@ -20,6 +23,7 @@ export const LoggerModal: React.FC = () => {
     closeLogger,
     loggerAnimeId,
     animeList,
+    addAnimeToDatabase,
     logAnime,
     saveDraftLog,
     currentDraft,
@@ -31,6 +35,8 @@ export const LoggerModal: React.FC = () => {
     loggerAnimeId || (animeList[0]?.id ?? '')
   );
   const [searchQuery, setSearchQuery] = useState('');
+  const [apiSearchResults, setApiSearchResults] = useState<Anime[]>([]);
+  const [isSearchingApi, setIsSearchingApi] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   const [rating, setRating] = useState<number>(5.0);
@@ -66,6 +72,31 @@ export const LoggerModal: React.FC = () => {
       setDateWatched(currentDraft.dateWatched);
     }
   }, [loggerAnimeId, currentDraft, isLoggerOpen]);
+
+  // Debounced API search for anime picker
+  useEffect(() => {
+    if (!isPickerOpen) return;
+    const clean = searchQuery.trim();
+    if (!clean) {
+      setApiSearchResults([]);
+      setIsSearchingApi(false);
+      return;
+    }
+
+    setIsSearchingApi(true);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const results = await searchAnimeApi(clean, 15);
+        setApiSearchResults(results);
+      } catch (e) {
+        console.warn('Review anime search error:', e);
+      } finally {
+        setIsSearchingApi(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, isPickerOpen]);
 
   if (!isLoggerOpen) return null;
 
@@ -186,45 +217,106 @@ export const LoggerModal: React.FC = () => {
                 <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
               </button>
 
-              {/* Dropdown Anime Picker */}
+              {/* Dropdown Anime Picker with Live API Search */}
               {isPickerOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-2 z-20 max-h-56 overflow-y-auto">
-                  <div className="flex items-center gap-2 px-2.5 py-1.5 mb-2 bg-slate-800/80 rounded-lg border border-slate-700">
-                    <Search className="w-3.5 h-3.5 text-slate-400" />
+                <div className="absolute top-full left-0 right-0 mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-2 z-20 max-h-64 overflow-y-auto">
+                  <div className="flex items-center gap-2 px-2.5 py-2 mb-2 bg-slate-800/80 rounded-lg border border-slate-700">
+                    <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     <input
                       type="text"
-                      placeholder="Search anime..."
+                      placeholder="Search any anime via AniList API..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
+                      autoFocus
                     />
-                  </div>
-                  <div className="space-y-1">
-                    {filteredAnime.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAnimeId(item.id);
-                          setIsPickerOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-colors ${
-                          selectedAnimeId === item.id
-                            ? 'bg-amber-400/20 text-amber-300'
-                            : 'hover:bg-slate-800 text-slate-200'
-                        }`}
-                      >
-                        <img
-                          src={item.coverImage}
-                          alt={item.title.english}
-                          referrerPolicy="no-referrer"
-                          className="w-7 h-9 object-cover rounded shrink-0"
-                        />
-                        <span className="truncate text-xs font-medium">
-                          {getAnimeTitle(item)}
-                        </span>
+                    {isSearchingApi ? (
+                      <Loader2 className="w-3.5 h-3.5 text-amber-400 animate-spin shrink-0" />
+                    ) : searchQuery ? (
+                      <button onClick={() => setSearchQuery('')} className="text-slate-400 hover:text-white">
+                        <X className="w-3.5 h-3.5" />
                       </button>
-                    ))}
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-1">
+                    {searchQuery.trim() ? (
+                      apiSearchResults.length > 0 ? (
+                        apiSearchResults.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              addAnimeToDatabase(item);
+                              setSelectedAnimeId(item.id);
+                              setIsPickerOpen(false);
+                              setSearchQuery('');
+                            }}
+                            className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-colors ${
+                              selectedAnimeId === item.id
+                                ? 'bg-amber-400/20 text-amber-300'
+                                : 'hover:bg-slate-800 text-slate-200'
+                            }`}
+                          >
+                            <img
+                              src={item.coverImage}
+                              alt={getAnimeTitle(item)}
+                              referrerPolicy="no-referrer"
+                              className="w-8 h-11 object-cover rounded shrink-0"
+                            />
+                            <div className="truncate flex-1">
+                              <span className="truncate text-xs font-semibold block text-white">
+                                {getAnimeTitle(item)}
+                              </span>
+                              <span className="text-[10px] text-slate-400">
+                                {item.year} · {item.format} · ★ {item.score.toFixed(1)}
+                              </span>
+                            </div>
+                          </button>
+                        ))
+                      ) : !isSearchingApi ? (
+                        <div className="py-4 text-center text-xs text-slate-500">
+                          No anime found matching "{searchQuery}"
+                        </div>
+                      ) : null
+                    ) : (
+                      /* Quick Curated Anime List */
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 px-2 py-1 block">
+                          Catalog
+                        </span>
+                        {animeList.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedAnimeId(item.id);
+                              setIsPickerOpen(false);
+                            }}
+                            className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-colors ${
+                              selectedAnimeId === item.id
+                                ? 'bg-amber-400/20 text-amber-300'
+                                : 'hover:bg-slate-800 text-slate-200'
+                            }`}
+                          >
+                            <img
+                              src={item.coverImage}
+                              alt={getAnimeTitle(item)}
+                              referrerPolicy="no-referrer"
+                              className="w-7 h-9 object-cover rounded shrink-0"
+                            />
+                            <div className="truncate flex-1">
+                              <span className="truncate text-xs font-medium block">
+                                {getAnimeTitle(item)}
+                              </span>
+                              <span className="text-[10px] text-slate-400">
+                                {item.year} · {item.format}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

@@ -1,651 +1,1081 @@
 import { Anime, CustomList, LogEntry, NotificationItem, UserProfile } from '../types/anime';
 
-// Official anime dataset with verified official imagery from AniList & MyAnimeList CDNs (No AI imagery)
+// Official anime dataset with verified live official imagery from AniList
 export const INITIAL_ANIME_DATABASE: Anime[] = [
   {
-    id: '154587', // Frieren
-    title: {
-      english: "Frieren: Beyond Journey's End",
-      romaji: "Sousou no Frieren",
-      native: "葬送のフリーレン"
+    "id": "154587",
+    "title": {
+      "english": "Frieren: Beyond Journey’s End",
+      "romaji": "Sousou no Frieren",
+      "native": "葬送のフリーレン"
     },
-    coverImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-n2bGQYVoWWmy.jpg',
-    bannerImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-ivXNJrBlsvLw.jpg',
-    score: 4.95,
-    malScore: 9.38,
-    rank: 1,
-    format: 'TV',
-    status: 'Finished',
-    episodes: 28,
-    durationMinutes: 24,
-    season: 'Fall',
-    year: 2023,
-    genres: ['Adventure', 'Drama', 'Fantasy'],
-    studios: ['Madhouse'],
-    producers: ['TOHO animation', 'Shogakukan', 'Nippon Television'],
-    source: 'Manga',
-    ageRating: 'PG-13',
-    synopsis: "The adventure is over, but life goes on for an elf mage beginning to learn what living truly means. Elf mage Frieren and her courageous fellow adventurers have defeated the Demon King and brought peace to the land. But Frieren will long outlive the rest of her former party. Decades after their victory, the funeral of one of her friends confronts Frieren with her own near-immortality. Frieren sets out on a journey to fulfill the last wishes of her comrades and finds herself beginning a new adventure.",
-    trailerYoutubeId: 'ZEkwCGJ3o_0',
-    scoreDistribution: {
-      '5.0': 58200,
-      '4.5': 19900,
-      '4.0': 4100,
-      '3.5': 920,
-      '3.0': 350,
-      '2.5': 120,
-      '2.0': 65,
-      '1.0': 20
-    },
-    streamingLinks: [
-      { name: 'Crunchyroll', badge: 'CR', url: 'https://www.crunchyroll.com/series/GG5H5XQX4/frieren-beyond-journeys-end' },
-      { name: 'Netflix', badge: 'NFX', url: 'https://www.netflix.com' }
+    "coverImage": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-qQTzQnEJJ3oB.jpg",
+    "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-ivXNJ23SM1xB.jpg",
+    "score": 4.55,
+    "malScore": 9.1,
+    "rank": 1,
+    "format": "TV",
+    "status": "Finished",
+    "episodes": 28,
+    "durationMinutes": 24,
+    "season": "Fall",
+    "year": 2023,
+    "genres": [
+      "Adventure",
+      "Drama",
+      "Fantasy"
     ],
-    characters: [
+    "studios": [
+      "MADHOUSE"
+    ],
+    "producers": [
+      "MADHOUSE"
+    ],
+    "source": "Manga",
+    "ageRating": "PG-13",
+    "synopsis": "The adventure is over but life goes on for an elf mage just beginning to learn what living is all about. Elf mage Frieren and her courageous fellow adventurers have defeated the Demon King and brought peace to the land. But Frieren will long outlive the rest of her former party. How will she come to understand what life means to the people around her? Decades after their victory, the funeral of one her friends confronts Frieren with her own near immortality. Frieren sets out to fulfill the last wishes of her comrades and finds herself beginning a new adventure…\n\n\n\n(Source: Crunchyroll)",
+    "trailerYoutubeId": "tR8YH0G67Rk",
+    "scoreDistribution": {
+      "5.0": 18617,
+      "4.5": 8462,
+      "4.0": 4062,
+      "3.5": 1692,
+      "3.0": 677,
+      "2.5": 236,
+      "2.0": 67,
+      "1.0": 33
+    },
+    "streamingLinks": [
       {
-        id: 'c1',
-        name: 'Frieren',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b178491-j5YF6uP7tE0s.png',
-        voiceActor: {
-          name: 'Atsumi Tanezaki',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n118497-28d1R01FvN1h.png'
+        "name": "Crunchyroll",
+        "badge": "CR",
+        "url": "https://www.crunchyroll.com"
+      },
+      {
+        "name": "Netflix",
+        "badge": "NFX",
+        "url": "https://www.netflix.com"
+      }
+    ],
+    "characters": [
+      {
+        "id": "176754",
+        "name": "Frieren",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b176754-PCnpqIOkjhFk.png",
+        "voiceActor": {
+          "name": "Atsumi Tanezaki",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n112215-kfABGD8W2YSJ.jpg"
         }
       },
       {
-        id: 'c2',
-        name: 'Fern',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b178492-Z8JjXQ1cQOcm.png',
-        voiceActor: {
-          name: 'Kana Ichinose',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n131580-g87M3Zk0B4t8.png'
+        "id": "183965",
+        "name": "Fern",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b183965-uGFohBjlFoTp.png",
+        "voiceActor": {
+          "name": "Kana Ichinose",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n124390-03LHel2XSFel.png"
         }
       },
       {
-        id: 'c3',
-        name: 'Stark',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b178493-iR3L9s3PvZkM.png',
-        voiceActor: {
-          name: 'Chiaki Kobayashi',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n136737-FpM3a3mG2Y7K.png'
+        "id": "184313",
+        "name": "Stark",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b184313-CQl6GSt4RSny.jpg",
+        "voiceActor": {
+          "name": "Chiaki Kobayashi",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n133507-oT1bd4Gax1Qg.jpg"
         }
       },
       {
-        id: 'c4',
-        name: 'Himmel',
-        role: 'Supporting',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b178494-W7hB3K9d4N0P.png',
-        voiceActor: {
-          name: 'Nobuhiko Okamoto',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n95669-hXw7R2L1q8Fk.png'
+        "id": "184310",
+        "name": "Heiter",
+        "role": "Supporting",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b184310-tiXvrq4FINXP.jpg",
+        "voiceActor": {
+          "name": "Hiroki Touchi",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95236-nlMo4dnjdT8p.png"
         }
       }
     ],
-    themeSongs: {
-      op: ['"Yuusha" by YOASOBI', '"Haru" by Yorushika'],
-      ed: ['"Anytime Anywhere" by milet']
+    "themeSongs": {
+      "op": [
+        "Official Opening Theme"
+      ],
+      "ed": [
+        "Official Ending Theme"
+      ]
     },
-    episodesList: [
-      { number: 1, title: "The Journey's End", airDate: 'Sep 29, 2023', synopsis: 'After defeating the Demon King, Frieren promises to meet the Hero party again in 50 years.' },
-      { number: 2, title: "It Didn't Have to Be Magic...", airDate: 'Sep 29, 2023', synopsis: 'Frieren visits priest Heiter in his later years and takes on young Fern as her apprentice.' },
-      { number: 3, title: 'Killing Magic', airDate: 'Oct 6, 2023', synopsis: 'Frieren and Fern visit a village troubled by a demon that was sealed away 80 years ago.' },
-      { number: 4, title: 'The Land Where Souls Rest', airDate: 'Oct 13, 2023', synopsis: 'Frieren and Fern discover the notes of the great wizard Flamme regarding the northern edge.' }
+    "episodesList": [
+      {
+        "number": 1,
+        "title": "Episode 1",
+        "airDate": "2023"
+      },
+      {
+        "number": 2,
+        "title": "Episode 2",
+        "airDate": "2023"
+      },
+      {
+        "number": 3,
+        "title": "Episode 3",
+        "airDate": "2023"
+      },
+      {
+        "number": 4,
+        "title": "Episode 4",
+        "airDate": "2023"
+      }
     ]
   },
   {
-    id: '127230', // Chainsaw Man
-    title: {
-      english: "Chainsaw Man",
-      romaji: "Chainsaw Man",
-      native: "チェンソーマン"
+    "id": "127230",
+    "title": {
+      "english": "Chainsaw Man",
+      "romaji": "Chainsaw Man",
+      "native": "チェンソーマン"
     },
-    coverImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx127230-NuE9dZfhDsF1.png',
-    bannerImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/127230-jH4m83n00k0a.jpg',
-    score: 4.65,
-    malScore: 8.52,
-    rank: 8,
-    format: 'TV',
-    status: 'Finished',
-    episodes: 12,
-    durationMinutes: 24,
-    season: 'Fall',
-    year: 2022,
-    genres: ['Action', 'Comedy', 'Drama', 'Supernatural'],
-    studios: ['MAPPA'],
-    producers: ['MAPPA', 'Shueisha'],
-    source: 'Manga',
-    ageRating: 'R-17',
-    synopsis: "Denji is a teenage boy living with a Chainsaw Devil named Pochita. Due to the debt his father left behind, he has been living a rock-bottom life while repaying his debt by harvesting devil corpses with Pochita. One day, Denji is betrayed and killed. As his consciousness fades, he makes a contract with Pochita and gets revived as 'Chainsaw Man' — a man with a devil's heart.",
-    trailerYoutubeId: 'dFlDRhvM4b0',
-    scoreDistribution: {
-      '5.0': 36500,
-      '4.5': 22400,
-      '4.0': 11800,
-      '3.5': 3800,
-      '3.0': 1400,
-      '2.5': 620,
-      '2.0': 310,
-      '1.0': 90
-    },
-    streamingLinks: [
-      { name: 'Crunchyroll', badge: 'CR', url: 'https://www.crunchyroll.com/series/GVDHX8QNW/chainsaw-man' },
-      { name: 'Hulu', badge: 'HL', url: 'https://www.hulu.com' }
+    "coverImage": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx127230-DdP4vAdssLoz.png",
+    "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/127230-o8IRwCGVr9KW.jpg",
+    "score": 4.15,
+    "malScore": 8.3,
+    "rank": 2,
+    "format": "TV",
+    "status": "Finished",
+    "episodes": 12,
+    "durationMinutes": 25,
+    "season": "Fall",
+    "year": 2022,
+    "genres": [
+      "Action",
+      "Drama",
+      "Horror",
+      "Supernatural"
     ],
-    characters: [
+    "studios": [
+      "MAPPA"
+    ],
+    "producers": [
+      "MAPPA"
+    ],
+    "source": "Manga",
+    "ageRating": "PG-13",
+    "synopsis": "Denji is a teenage boy living with a Chainsaw Devil named Pochita. Due to the debt his father left behind, he has been living a rock-bottom life while repaying his debt by harvesting devil corpses with Pochita.\n\n\nOne day, Denji is betrayed and killed. As his consciousness fades, he makes a contract with Pochita and gets revived as \"Chainsaw Man\" — a man with a devil's heart.\n\n\n\n(Source: Crunchyroll)",
+    "trailerYoutubeId": "v4yLeNt-kCU",
+    "scoreDistribution": {
+      "5.0": 10867,
+      "4.5": 7762,
+      "4.0": 3726,
+      "3.5": 1552,
+      "3.0": 621,
+      "2.5": 217,
+      "2.0": 62,
+      "1.0": 31
+    },
+    "streamingLinks": [
       {
-        id: 'c5',
-        name: 'Denji',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b130138-sA07b9h2H7nO.png',
-        voiceActor: {
-          name: 'Kikunosuke Toya',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n205315-G0nE01K8t8f2.png'
+        "name": "Crunchyroll",
+        "badge": "CR",
+        "url": "https://www.crunchyroll.com"
+      },
+      {
+        "name": "Netflix",
+        "badge": "NFX",
+        "url": "https://www.netflix.com"
+      }
+    ],
+    "characters": [
+      {
+        "id": "130102",
+        "name": "Denji",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b130102-FO1VHNnEnLlB.png",
+        "voiceActor": {
+          "name": "Kikunosuke Toya",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n284463-w0qcBQXvlz3Z.png"
         }
       },
       {
-        id: 'c6',
-        name: 'Makima',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b137079-qK9Y0u7R1x1M.png',
-        voiceActor: {
-          name: 'Tomori Kusunoki',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n131581-VvM9c4A5L1n1.png'
+        "id": "137079",
+        "name": "Power",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b137079-6yLEUYR3bmpr.png",
+        "voiceActor": {
+          "name": "Fairouz Ai",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n133625-YpEgKD7flV2S.jpg"
         }
       },
       {
-        id: 'c7',
-        name: 'Power',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b137080-v9Wk0pQ8d1C0.png',
-        voiceActor: {
-          name: 'Fairouz Ai',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n137330-kX5a2L1n8Fk0.png'
+        "id": "137080",
+        "name": "Makima",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b137080-UHcynYNjb5ZU.png",
+        "voiceActor": {
+          "name": "Tomori Kusunoki",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n124923-SQtqIQeicb7f.png"
+        }
+      },
+      {
+        "id": "137081",
+        "name": "Aki Hayakawa",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b137081-TSrUR3mUJL6r.png",
+        "voiceActor": {
+          "name": "Shougo Sakata",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n158510-QDmd7dD9Rg89.jpg"
         }
       }
     ],
-    themeSongs: {
-      op: ['"KICK BACK" by Kenshi Yonezu'],
-      ed: ['"CHAINSAW BLOOD" by Vaundy', '"Time Left" by ZUTOMAYO']
+    "themeSongs": {
+      "op": [
+        "Official Opening Theme"
+      ],
+      "ed": [
+        "Official Ending Theme"
+      ]
     },
-    episodesList: [
-      { number: 1, title: 'Dog & Chainsaw', airDate: 'Oct 12, 2022', synopsis: 'Denji struggles to pay back debt through black-market devil hunting.' },
-      { number: 2, title: 'Arrival in Tokyo', airDate: 'Oct 19, 2022', synopsis: 'Denji is taken in by Public Safety and meets Aki Hayakawa.' },
-      { number: 3, title: "Meowy's Whereabouts", airDate: 'Oct 26, 2022', synopsis: 'Denji is paired up with Power, the Blood Fiend.' }
+    "episodesList": [
+      {
+        "number": 1,
+        "title": "Episode 1",
+        "airDate": "2022"
+      },
+      {
+        "number": 2,
+        "title": "Episode 2",
+        "airDate": "2022"
+      },
+      {
+        "number": 3,
+        "title": "Episode 3",
+        "airDate": "2022"
+      },
+      {
+        "number": 4,
+        "title": "Episode 4",
+        "airDate": "2022"
+      }
     ]
   },
   {
-    id: '144665', // Bocchi the Rock!
-    title: {
-      english: "Bocchi the Rock!",
-      romaji: "Bocchi the Rock!",
-      native: "ぼっち・ざ・ろっく！"
+    "id": "130003",
+    "title": {
+      "english": "BOCCHI THE ROCK!",
+      "romaji": "Bocchi the Rock!",
+      "native": "ぼっち・ざ・ろっく！"
     },
-    coverImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx144665-u64G5Fv05o3O.png',
-    bannerImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/144665-ZfDk1Z8T8W2k.jpg',
-    score: 4.88,
-    malScore: 8.81,
-    rank: 6,
-    format: 'TV',
-    status: 'Finished',
-    episodes: 12,
-    durationMinutes: 24,
-    season: 'Fall',
-    year: 2022,
-    genres: ['Comedy', 'Music', 'Slice of Life'],
-    studios: ['CloverWorks'],
-    producers: ['Aniplex', 'Houbunsha'],
-    source: 'Manga',
-    ageRating: 'PG-13',
-    synopsis: "Hitori Gotou is a high school girl who starts learning to play the guitar because she dreams of being in a band, but she's so shy that she hasn't made a single friend. However, her dream might come true after she meets Nijika Ijichi, a girl who plays drums and is looking for a new guitarist for her band Kessoku Band.",
-    trailerYoutubeId: '7fM-4o_27e8',
-    scoreDistribution: {
-      '5.0': 41000,
-      '4.5': 19500,
-      '4.0': 6200,
-      '3.5': 1200,
-      '3.0': 430,
-      '2.5': 150,
-      '2.0': 80,
-      '1.0': 15
-    },
-    streamingLinks: [
-      { name: 'Crunchyroll', badge: 'CR', url: 'https://www.crunchyroll.com/series/GX7H55WP4/bocchi-the-rock' }
+    "coverImage": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx130003-HTDmeL4RGeJ4.png",
+    "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/130003-5F90a7BtsPQN.jpg",
+    "score": 4.35,
+    "malScore": 8.7,
+    "rank": 3,
+    "format": "TV",
+    "status": "Finished",
+    "episodes": 12,
+    "durationMinutes": 24,
+    "season": "Fall",
+    "year": 2022,
+    "genres": [
+      "Comedy",
+      "Music",
+      "Slice of Life"
     ],
-    characters: [
+    "studios": [
+      "CloverWorks"
+    ],
+    "producers": [
+      "CloverWorks"
+    ],
+    "source": "Manga",
+    "ageRating": "PG-13",
+    "synopsis": "Hitori Gotou, “Bocchi-chan,” is a girl who’s so introverted and shy around people that she’d always start her conversations with “Ah...”\n\n\n\nDuring her middle school years, she started playing the guitar, wanting to join a band because she thought it could be an opportunity for even someone shy like her to also shine. But because she had no friends, she ended up practicing guitar for six hours every day all by herself. After becoming a skilled guitar player, she uploaded videos of herself playing the guitar to the internet under the name “Guitar Hero” and fantasized about performing at her school’s cultural festival concert. But not only could she not find any bandmates, before she knew it, she was in high school and still wasn’t able to make a single friend!\n\n\n\nShe was really close to becoming a shut-in, but one day, Nijika Ijichi, the drummer in Kessoku Band, reached out to her. And because of that, her everyday life started to change little by little...\n\n\n\n(Source: Crunchyroll)",
+    "trailerYoutubeId": "SyMMZF5zNW4",
+    "scoreDistribution": {
+      "5.0": 17847,
+      "4.5": 8112,
+      "4.0": 3894,
+      "3.5": 1622,
+      "3.0": 649,
+      "2.5": 227,
+      "2.0": 64,
+      "1.0": 32
+    },
+    "streamingLinks": [
       {
-        id: 'c8',
-        name: 'Hitori Gotoh',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b192806-u7K0q8B2D0t3.png',
-        voiceActor: {
-          name: 'Yoshino Aoyama',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n119293-j0V2K8f1m9L1.png'
+        "name": "Crunchyroll",
+        "badge": "CR",
+        "url": "https://www.crunchyroll.com"
+      },
+      {
+        "name": "Netflix",
+        "badge": "NFX",
+        "url": "https://www.netflix.com"
+      }
+    ],
+    "characters": [
+      {
+        "id": "257562",
+        "name": "Hitori Gotou",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b257562-Ru35NYPfsqhY.png",
+        "voiceActor": {
+          "name": "Yoshino Aoyama",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n118475-19IqPJRpa08T.png"
         }
       },
       {
-        id: 'c9',
-        name: 'Nijika Ijichi',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b192807-g0W2L9k1n4C0.png',
-        voiceActor: {
-          name: 'Sayumi Suzushiro',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n134764-u3F0s9A1p7L0.png'
-        }
-      }
-    ],
-    themeSongs: {
-      op: ['"Seishun Complex" by Kessoku Band'],
-      ed: ['"Distortion!!" by Kessoku Band', '"Karakara" by Kessoku Band']
-    },
-    episodesList: [
-      { number: 1, title: 'Lonely Rolling Bocchi', airDate: 'Oct 9, 2022', synopsis: 'Introvert Hitori Gotoh wants to make friends through playing guitar.' },
-      { number: 2, title: 'See You Tomorrow', airDate: 'Oct 16, 2022', synopsis: 'Hitori gets a part-time job at Live House STARRY to pay for band venue fees.' }
-    ]
-  },
-  {
-    id: '113415', // Jujutsu Kaisen
-    title: {
-      english: "Jujutsu Kaisen",
-      romaji: "Jujutsu Kaisen",
-      native: "呪術廻戦"
-    },
-    coverImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx113415-bbBWj4pEFseh.jpg',
-    bannerImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/113415-jQBSkxWAAk83.jpg',
-    score: 4.78,
-    malScore: 8.62,
-    rank: 7,
-    format: 'TV',
-    status: 'Finished',
-    episodes: 24,
-    durationMinutes: 24,
-    season: 'Fall',
-    year: 2020,
-    genres: ['Action', 'Drama', 'Supernatural'],
-    studios: ['MAPPA'],
-    producers: ['TOHO animation', 'Shueisha'],
-    source: 'Manga',
-    ageRating: 'R-17',
-    synopsis: "High schooler Yuuji Itadori spends his days visiting his bedridden grandfather. However, his leisurely lifestyle takes a turn for the strange when he unwittingly swallows a cursed finger belonging to the demon Ryomen Sukuna. Introduced to the secret world of Jujutsu Sorcerers, Yuuji is tasked with consuming all twenty fingers before being executed.",
-    trailerYoutubeId: '4A_XgGW8pEM',
-    scoreDistribution: {
-      '5.0': 52000,
-      '4.5': 31000,
-      '4.0': 14000,
-      '3.5': 4200,
-      '3.0': 1800,
-      '2.0': 350,
-      '1.0': 80
-    },
-    streamingLinks: [
-      { name: 'Crunchyroll', badge: 'CR', url: 'https://www.crunchyroll.com/series/GRDV0019R/jujutsu-kaisen' },
-      { name: 'Netflix', badge: 'NFX', url: 'https://www.netflix.com' }
-    ],
-    characters: [
-      {
-        id: 'c10',
-        name: 'Satoru Gojo',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b127993-zC7a3d1b9e0f.png',
-        voiceActor: {
-          name: 'Yuichi Nakamura',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n95514-A2L1m9f0p7k0.png'
+        "id": "261674",
+        "name": "Nijika Ijichi",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b261674-a8tJYvtzqWgC.png",
+        "voiceActor": {
+          "name": "Sayumi Suzushiro",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n126963-GnhNcLWFeKmy.png"
         }
       },
       {
-        id: 'c11',
-        name: 'Yuji Itadori',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b127992-8T7b1a2c3d4e.png',
-        voiceActor: {
-          name: 'Junya Enoki',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n118498-B3L1k9f0m7j0.png'
-        }
-      }
-    ],
-    themeSongs: {
-      op: ['"Kaikai Kitan" by Eve', '"VIVID VICE" by Who-ya Extended'],
-      ed: ['"LOST IN PARADISE" by ALI feat. AKLO']
-    },
-    episodesList: [
-      { number: 1, title: 'Ryomen Sukuna', airDate: 'Oct 3, 2020', synopsis: 'Yuuji meets jujutsu sorcerer Megumi Fushiguro and encounters a curse.' },
-      { number: 2, title: 'For Myself', airDate: 'Oct 10, 2020', synopsis: 'Yuuji awakens facing Satoru Gojo, the strongest sorcerer.' }
-    ]
-  },
-  {
-    id: '9253', // Steins;Gate
-    title: {
-      english: "Steins;Gate",
-      romaji: "Steins;Gate",
-      native: "STEINS;GATE"
-    },
-    coverImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx9253-7pdc4SfhKOKF.png',
-    bannerImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/9253-Gz7fG70b3g6B.jpg',
-    score: 4.93,
-    malScore: 9.07,
-    rank: 3,
-    format: 'TV',
-    status: 'Finished',
-    episodes: 24,
-    durationMinutes: 24,
-    season: 'Spring',
-    year: 2011,
-    genres: ['Drama', 'Psychological', 'Sci-Fi', 'Thriller'],
-    studios: ['White Fox'],
-    producers: ['Frontier Works', 'Media Factory'],
-    source: 'Visual Novel',
-    ageRating: 'PG-13',
-    synopsis: "Self-proclaimed mad scientist Rintarou Okabe rents out a room in a rickety old building in Akihabara, where he invents 'future gadgets' with fellow lab members Mayuri Shiina and Hashida Itaru. Their most promising creation is the 'Phone Microwave,' which unexpectedly morphs bananas into green gel. When Okabe attends a conference on time travel, he discovers the body of Kurisu Makise, but moments later, the world shifts.",
-    trailerYoutubeId: 'uMYhjVwp0Fk',
-    scoreDistribution: {
-      '5.0': 64000,
-      '4.5': 21000,
-      '4.0': 5300,
-      '3.5': 1100,
-      '3.0': 420,
-      '2.0': 90,
-      '1.0': 25
-    },
-    streamingLinks: [
-      { name: 'Crunchyroll', badge: 'CR', url: 'https://www.crunchyroll.com/series/GY8VM9N9Y/steinsgate' },
-      { name: 'Hulu', badge: 'HL', url: 'https://www.hulu.com' }
-    ],
-    characters: [
-      {
-        id: 'c12',
-        name: 'Rintarou Okabe',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b35252-0k1m2n3p4q5r.png',
-        voiceActor: {
-          name: 'Mamoru Miyano',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n95068-K0L1m9f0p7k0.png'
+        "id": "264529",
+        "name": "Ryou Yamada",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b264529-BvEusZnJLD2Y.png",
+        "voiceActor": {
+          "name": "Saku Mizuno",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n213951-EQGfRStCAJ2Q.jpg"
         }
       },
       {
-        id: 'c13',
-        name: 'Kurisu Makise',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b35253-1a2b3c4d5e6f.png',
-        voiceActor: {
-          name: 'Asami Imai',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n95963-J1K2L3m4p5q6.png'
+        "id": "266041",
+        "name": "Ikuyo Kita",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b266041-1HKgjJGP2MmM.png",
+        "voiceActor": {
+          "name": "Ikumi Hasegawa",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n132768-r4FwpBpHnRtZ.png"
         }
       }
     ],
-    themeSongs: {
-      op: ['"Hacking to the Gate" by Kanako Itou'],
-      ed: ['"Toki Tsukasadoru Jūni no Meiyaku" by Yui Sakakibara']
+    "themeSongs": {
+      "op": [
+        "Official Opening Theme"
+      ],
+      "ed": [
+        "Official Ending Theme"
+      ]
     },
-    episodesList: [
-      { number: 1, title: 'Turning Point', airDate: 'Apr 6, 2011', synopsis: 'Okabe attends a lecture on time machines and finds Kurisu Makise in a pool of blood.' },
-      { number: 2, title: 'Time Travel Paranoia', airDate: 'Apr 13, 2011', synopsis: 'Okabe realizes his text message traveled through time.' }
+    "episodesList": [
+      {
+        "number": 1,
+        "title": "Episode 1",
+        "airDate": "2022"
+      },
+      {
+        "number": 2,
+        "title": "Episode 2",
+        "airDate": "2022"
+      },
+      {
+        "number": 3,
+        "title": "Episode 3",
+        "airDate": "2022"
+      },
+      {
+        "number": 4,
+        "title": "Episode 4",
+        "airDate": "2022"
+      }
     ]
   },
   {
-    id: '21827', // Violet Evergarden
-    title: {
-      english: "Violet Evergarden",
-      romaji: "Violet Evergarden",
-      native: "ヴァイオレット・エヴァーガーデン"
+    "id": "113415",
+    "title": {
+      "english": "JUJUTSU KAISEN",
+      "romaji": "Jujutsu Kaisen",
+      "native": "呪術廻戦"
     },
-    coverImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21827-10fJRFfdxA3P.png',
-    bannerImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/21827-0466s5e6gX0y.jpg',
-    score: 4.87,
-    malScore: 8.68,
-    rank: 9,
-    format: 'TV',
-    status: 'Finished',
-    episodes: 13,
-    durationMinutes: 24,
-    season: 'Winter',
-    year: 2018,
-    genres: ['Drama', 'Fantasy', 'Slice of Life'],
-    studios: ['Kyoto Animation'],
-    producers: ['Lantis', 'Pony Canyon'],
-    source: 'Light Novel',
-    ageRating: 'PG-13',
-    synopsis: "The Great War finally came to an end after four long years of conflict. Caught up in the bloodshed was Violet Evergarden, a young girl raised for the sole purpose of decimating enemy lines. Left with only the final words from her beloved Major Gilbert—'I love you'—she joins the CH Postal Services as an Auto Memory Doll to understand what love means.",
-    trailerYoutubeId: 'g5xWqj4F4wQ',
-    scoreDistribution: {
-      '5.0': 49000,
-      '4.5': 23000,
-      '4.0': 8100,
-      '3.5': 1900,
-      '3.0': 600,
-      '2.0': 90,
-      '1.0': 20
-    },
-    streamingLinks: [
-      { name: 'Netflix', badge: 'NFX', url: 'https://www.netflix.com/title/80159704' }
+    "coverImage": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx113415-LHBAeoZDIsnF.jpg",
+    "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/113415-jQBSkxWAAk83.jpg",
+    "score": 4.2,
+    "malScore": 8.4,
+    "rank": 4,
+    "format": "TV",
+    "status": "Finished",
+    "episodes": 24,
+    "durationMinutes": 24,
+    "season": "Fall",
+    "year": 2020,
+    "genres": [
+      "Action",
+      "Drama",
+      "Supernatural"
     ],
-    characters: [
+    "studios": [
+      "MAPPA"
+    ],
+    "producers": [
+      "MAPPA"
+    ],
+    "source": "Manga",
+    "ageRating": "PG-13",
+    "synopsis": "A boy fights... for \"the right death.\"\n\n\n\nHardship, regret, shame: the negative feelings that humans feel become Curses that lurk in our everyday lives. The Curses run rampant throughout the world, capable of leading people to terrible misfortune and even death. What's more, the Curses can only be exorcised by another Curse.\n\n\n\nItadori Yuji is a boy with tremendous physical strength, though he lives a completely ordinary high school life. One day, to save a friend who has been attacked by Curses, he eats the finger of the Double-Faced Specter, taking the Curse into his own soul. From then on, he shares one body with the Double-Faced Specter. Guided by the most powerful of sorcerers, Gojou Satoru, Itadori is admitted to the Tokyo Metropolitan Technical High School of Sorcery, an organization that fights the Curses... and thus begins the heroic tale of a boy who became a Curse to exorcise a Curse, a life from which he could never turn back.\n\n\n\n(Source: Crunchyroll)\n\n\n\nNote: The first episode received an early web premiere on September 19th, 2020. The regular TV broadcast started on October 3rd, 2020.",
+    "trailerYoutubeId": "RIyb52EMx8c",
+    "scoreDistribution": {
+      "5.0": 10990,
+      "4.5": 7850,
+      "4.0": 3768,
+      "3.5": 1570,
+      "3.0": 628,
+      "2.5": 219,
+      "2.0": 62,
+      "1.0": 31
+    },
+    "streamingLinks": [
       {
-        id: 'c14',
-        name: 'Violet Evergarden',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b124483-C9pL1n4k0f8j.png',
-        voiceActor: {
-          name: 'Yui Ishikawa',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n106208-kL1m9f0p7k0A.png'
-        }
+        "name": "Crunchyroll",
+        "badge": "CR",
+        "url": "https://www.crunchyroll.com"
+      },
+      {
+        "name": "Netflix",
+        "badge": "NFX",
+        "url": "https://www.netflix.com"
       }
     ],
-    themeSongs: {
-      op: ['"Sincerely" by TRUE'],
-      ed: ['"Michishirube" by Minori Chihara']
-    },
-    episodesList: [
-      { number: 1, title: '"I Love You" and Auto Memory Dolls', airDate: 'Jan 11, 2018', synopsis: 'Former child soldier Violet begins working at CH Postal Company.' },
-      { number: 2, title: 'Never Coming Back', airDate: 'Jan 18, 2018', synopsis: 'Violet attends an Auto Memory Doll school to learn emotional expression.' }
-    ]
-  },
-  {
-    id: '199', // Spirited Away
-    title: {
-      english: "Spirited Away",
-      romaji: "Sen to Chihiro no Kamikakushi",
-      native: "千と千尋の神隠し"
-    },
-    coverImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx199-iRHAf4i34FmE.jpg',
-    bannerImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/199-rD3tP5t2iG7O.jpg',
-    score: 4.96,
-    malScore: 8.78,
-    rank: 2,
-    format: 'Movie',
-    status: 'Finished',
-    episodes: 1,
-    durationMinutes: 125,
-    season: 'Summer',
-    year: 2001,
-    genres: ['Adventure', 'Drama', 'Fantasy', 'Supernatural'],
-    studios: ['Studio Ghibli'],
-    producers: ['Tokuma Shoten', 'Nippon Television'],
-    source: 'Original',
-    ageRating: 'PG',
-    synopsis: "Ten-year-old Chihiro Ogino and her parents discover an abandoned amusement park on the way to their new home. When night falls, spirits emerge and Chihiro's parents are turned into pigs. To save them and return to the human world, Chihiro takes a job at a bathhouse for spirits owned by the witch Yubaba.",
-    trailerYoutubeId: 'ByXuk9QqQkk',
-    scoreDistribution: {
-      '5.0': 78000,
-      '4.5': 24000,
-      '4.0': 4500,
-      '3.5': 800,
-      '3.0': 200,
-      '2.0': 40,
-      '1.0': 10
-    },
-    streamingLinks: [
-      { name: 'Max', badge: 'MAX', url: 'https://www.max.com' },
-      { name: 'Netflix', badge: 'NFX', url: 'https://www.netflix.com' }
-    ],
-    characters: [
+    "characters": [
       {
-        id: 'c15',
-        name: 'Chihiro Ogino',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b1968-C8pL1n4k0f8j.png',
-        voiceActor: {
-          name: 'Rumi Hiiragi',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n95837-M1N2P3q4r5s6.png'
+        "id": "126635",
+        "name": "Megumi Fushiguro",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b126635-L0y3I92JSUkN.png",
+        "voiceActor": {
+          "name": "Yuuma Uchida",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n119617-icFDk96OdV5k.png"
         }
       },
       {
-        id: 'c16',
-        name: 'Haku',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b1969-K1L2M3n4p5q6.png',
-        voiceActor: {
-          name: 'Miyu Irino',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n95094-T1U2V3w4x5y6.png'
-        }
-      }
-    ],
-    themeSongs: {
-      op: ['"One Summer\'s Day" by Joe Hisaishi'],
-      ed: ['"Always With Me" by Youmi Kimura']
-    },
-    episodesList: [
-      { number: 1, title: 'Full Movie', airDate: 'Jul 20, 2001', synopsis: 'Chihiro enters the spirit world bathhouse run by the witch Yubaba.' }
-    ]
-  },
-  {
-    id: '16498', // Attack on Titan
-    title: {
-      english: "Attack on Titan",
-      romaji: "Shingeki no Kyojin",
-      native: "進撃の巨人"
-    },
-    coverImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx16498-C6FPmWm59CyP.jpg',
-    bannerImage: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/16498-73IhOXpJZiRc.jpg',
-    score: 4.90,
-    malScore: 8.54,
-    rank: 4,
-    format: 'TV',
-    status: 'Finished',
-    episodes: 25,
-    durationMinutes: 24,
-    season: 'Spring',
-    year: 2013,
-    genres: ['Action', 'Drama', 'Fantasy', 'Mystery'],
-    studios: ['WIT Studio'],
-    producers: ['Production I.G', 'Pony Canyon', 'Kodansha'],
-    source: 'Manga',
-    ageRating: 'R-17',
-    synopsis: "Centuries ago, mankind was slaughtered to near extinction by monstrous humanoid creatures called Titans. Survivors built three massive concentric walls. After one hundred years of tranquility, a colossal Titan suddenly smashes through Wall Maria, unleashing devastation upon the city.",
-    trailerYoutubeId: 'MGRm4IzK1SQ',
-    scoreDistribution: {
-      '5.0': 71000,
-      '4.5': 26000,
-      '4.0': 8900,
-      '3.5': 2100,
-      '3.0': 850,
-      '2.0': 200,
-      '1.0': 50
-    },
-    streamingLinks: [
-      { name: 'Crunchyroll', badge: 'CR', url: 'https://www.crunchyroll.com/series/GR751KNZY/attack-on-titan' },
-      { name: 'Hulu', badge: 'HL', url: 'https://www.hulu.com' }
-    ],
-    characters: [
-      {
-        id: 'c17',
-        name: 'Eren Yeager',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b40882-6p7q8r9s0t1u.png',
-        voiceActor: {
-          name: 'Yuki Kaji',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n95147-A1B2C3d4e5f6.png'
+        "id": "127212",
+        "name": "Yuuji Itadori",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b127212-FVm2tD0erQ5B.png",
+        "voiceActor": {
+          "name": "Junya Enoki",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n119319-yIrrUOUaJuSm.png"
         }
       },
       {
-        id: 'c18',
-        name: 'Mikasa Ackerman',
-        role: 'Main',
-        image: 'https://s4.anilist.co/file/anilistcdn/character/large/b40881-A1B2C3d4e5f6.png',
-        voiceActor: {
-          name: 'Yui Ishikawa',
-          language: 'Japanese',
-          image: 'https://s4.anilist.co/file/anilistcdn/staff/large/n106208-kL1m9f0p7k0A.png'
+        "id": "127691",
+        "name": "Satoru Gojou",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b127691-9zqh1xpIubn7.png",
+        "voiceActor": {
+          "name": "Yuuichi Nakamura",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95513-up9ZDuocHgRs.png"
+        }
+      },
+      {
+        "id": "133700",
+        "name": "Nobara Kugisaki",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b133700-f6sOO3TcgLV6.png",
+        "voiceActor": {
+          "name": "Asami Seto",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n106787-ojpoY7XEGYgc.jpg"
         }
       }
     ],
-    themeSongs: {
-      op: ['"Guren no Yumiya" by Linked Horizon'],
-      ed: ['"Utsukushiki Zankoku na Sekai" by Yoko Hikasa']
+    "themeSongs": {
+      "op": [
+        "Official Opening Theme"
+      ],
+      "ed": [
+        "Official Ending Theme"
+      ]
     },
-    episodesList: [
-      { number: 1, title: 'To You, in 2000 Years', airDate: 'Apr 7, 2013', synopsis: 'The Colossal Titan breaks through Wall Maria.' }
+    "episodesList": [
+      {
+        "number": 1,
+        "title": "Episode 1",
+        "airDate": "2020"
+      },
+      {
+        "number": 2,
+        "title": "Episode 2",
+        "airDate": "2020"
+      },
+      {
+        "number": 3,
+        "title": "Episode 3",
+        "airDate": "2020"
+      },
+      {
+        "number": 4,
+        "title": "Episode 4",
+        "airDate": "2020"
+      }
+    ]
+  },
+  {
+    "id": "9253",
+    "title": {
+      "english": "Steins;Gate",
+      "romaji": "Steins;Gate",
+      "native": "シュタインズ・ゲート"
+    },
+    "coverImage": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx9253-tIUXF2gfU8Sg.jpg",
+    "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/n9253-JIhmKgBKsWUN.jpg",
+    "score": 4.45,
+    "malScore": 8.9,
+    "rank": 5,
+    "format": "TV",
+    "status": "Finished",
+    "episodes": 24,
+    "durationMinutes": 24,
+    "season": "Spring",
+    "year": 2011,
+    "genres": [
+      "Drama",
+      "Psychological",
+      "Sci-Fi",
+      "Thriller"
+    ],
+    "studios": [
+      "WHITE FOX"
+    ],
+    "producers": [
+      "WHITE FOX"
+    ],
+    "source": "Visual Novel",
+    "ageRating": "PG-13",
+    "synopsis": "Self-proclaimed mad scientist Okabe Rintarou lives in a small room in Akihabara, where he invents \"future gadgets\" with fellow lab members Shiina Mayuri, his air-headed childhood friend, and Hashida Itaru, an otaku hacker. The three pass the time by tinkering with their latest creation, a \"Phone Microwave\" that can be controlled through text messages. \n\n\n\nThe lab members soon face a string of mysterious incidents that lead to a game-changing discovery: the Phone Microwave can send emails to the past and thus alter history. Adapted from the critically acclaimed visual novel by 5pb. and Nitroplus, Steins;Gate takes Okabe to the depths of scientific theory and human despair as he faces the dire consequences of changing the past.",
+    "trailerYoutubeId": "27OZc-ku6is",
+    "scoreDistribution": {
+      "5.0": 18232,
+      "4.5": 8287,
+      "4.0": 3978,
+      "3.5": 1657,
+      "3.0": 663,
+      "2.5": 232,
+      "2.0": 66,
+      "1.0": 33
+    },
+    "streamingLinks": [
+      {
+        "name": "Crunchyroll",
+        "badge": "CR",
+        "url": "https://www.crunchyroll.com"
+      },
+      {
+        "name": "Netflix",
+        "badge": "NFX",
+        "url": "https://www.netflix.com"
+      }
+    ],
+    "characters": [
+      {
+        "id": "34470",
+        "name": "Kurisu Makise",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b34470-Jw2LXZBL5R8i.png",
+        "voiceActor": {
+          "name": "Asami Imai",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n103662-1gAPfy3TvPK8.png"
+        }
+      },
+      {
+        "id": "35252",
+        "name": "Rintarou Okabe",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b35252-DY9TW6pusqeh.png",
+        "voiceActor": {
+          "name": "Mamoru Miyano",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95065-eyynywrhombR.png"
+        }
+      },
+      {
+        "id": "35253",
+        "name": "Mayuri Shiina",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b35253-u6QVgLLyHq2W.png",
+        "voiceActor": {
+          "name": "Kana Hanazawa",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95185-x8ZYvtN7SegC.png"
+        }
+      },
+      {
+        "id": "35255",
+        "name": "Suzuha Amane",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b35255-Ra9Aq5Kn9lYq.png",
+        "voiceActor": {
+          "name": "Yukari Tamura",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95027-Zm9onZDUN7ih.jpg"
+        }
+      }
+    ],
+    "themeSongs": {
+      "op": [
+        "Official Opening Theme"
+      ],
+      "ed": [
+        "Official Ending Theme"
+      ]
+    },
+    "episodesList": [
+      {
+        "number": 1,
+        "title": "Episode 1",
+        "airDate": "2011"
+      },
+      {
+        "number": 2,
+        "title": "Episode 2",
+        "airDate": "2011"
+      },
+      {
+        "number": 3,
+        "title": "Episode 3",
+        "airDate": "2011"
+      },
+      {
+        "number": 4,
+        "title": "Episode 4",
+        "airDate": "2011"
+      }
+    ]
+  },
+  {
+    "id": "21827",
+    "title": {
+      "english": "Violet Evergarden",
+      "romaji": "Violet Evergarden",
+      "native": "ヴァイオレット・エヴァーガーデン"
+    },
+    "coverImage": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx21827-ubzq619ZA2E9.png",
+    "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/21827-ROucgYiiiSpR.jpg",
+    "score": 4.25,
+    "malScore": 8.5,
+    "rank": 6,
+    "format": "TV",
+    "status": "Finished",
+    "episodes": 13,
+    "durationMinutes": 24,
+    "season": "Winter",
+    "year": 2018,
+    "genres": [
+      "Drama",
+      "Fantasy",
+      "Slice of Life"
+    ],
+    "studios": [
+      "Kyoto Animation"
+    ],
+    "producers": [
+      "Kyoto Animation"
+    ],
+    "source": "Light Novel",
+    "ageRating": "PG-13",
+    "synopsis": "A certain point in time, in the continent of Telesis. The great war which divided the continent into North and South has ended after four years, and the people are welcoming a new generation. Violet Evergarden, a young girl formerly known as “the weapon”, has left the battlefield to start a new life at CH Postal Service. There, she is deeply moved by the work of “Auto Memories Dolls”, who carry people's thoughts and convert them into words. Violet begins her journey as an Auto Memories Doll, and comes face to face with various people's emotions and differing shapes of love. There are words Violet heard on the battlefield, which she cannot forget. These words were given to her by someone she holds dear, more than anyone else. She does not yet know their meaning but she searches to find it.\n\n\n\n(Source: Anime News Network)",
+    "trailerYoutubeId": "_grmduuECm4",
+    "scoreDistribution": {
+      "5.0": 17462,
+      "4.5": 7937,
+      "4.0": 3810,
+      "3.5": 1587,
+      "3.0": 635,
+      "2.5": 222,
+      "2.0": 63,
+      "1.0": 31
+    },
+    "streamingLinks": [
+      {
+        "name": "Crunchyroll",
+        "badge": "CR",
+        "url": "https://www.crunchyroll.com"
+      },
+      {
+        "name": "Netflix",
+        "badge": "NFX",
+        "url": "https://www.netflix.com"
+      }
+    ],
+    "characters": [
+      {
+        "id": "90169",
+        "name": "Violet Evergarden",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b90169-4wr1Zehnsac8.png",
+        "voiceActor": {
+          "name": "Yui Ishikawa",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n100142-k6RP0HzXffUG.png"
+        }
+      },
+      {
+        "id": "124787",
+        "name": "Cattleya Baudelaire",
+        "role": "Supporting",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b124787-1HuZGawvoejp.jpg",
+        "voiceActor": {
+          "name": "Aya Endou",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95054-USmUajnl3bnT.jpg"
+        }
+      },
+      {
+        "id": "124788",
+        "name": "Benedict Blue",
+        "role": "Supporting",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b124788-upZ5vtGwndzt.jpg",
+        "voiceActor": {
+          "name": "Kouki Uchiyama",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n96764-yJWGrhjanDJQ.png"
+        }
+      },
+      {
+        "id": "124789",
+        "name": "Dietfried Bougainvillea",
+        "role": "Supporting",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b124789-DLp0QEJZeiQ8.png",
+        "voiceActor": {
+          "name": "Hidenobu Kiuchi",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95174-yTsadXRKchp7.png"
+        }
+      }
+    ],
+    "themeSongs": {
+      "op": [
+        "Official Opening Theme"
+      ],
+      "ed": [
+        "Official Ending Theme"
+      ]
+    },
+    "episodesList": [
+      {
+        "number": 1,
+        "title": "Episode 1",
+        "airDate": "2018"
+      },
+      {
+        "number": 2,
+        "title": "Episode 2",
+        "airDate": "2018"
+      },
+      {
+        "number": 3,
+        "title": "Episode 3",
+        "airDate": "2018"
+      },
+      {
+        "number": 4,
+        "title": "Episode 4",
+        "airDate": "2018"
+      }
+    ]
+  },
+  {
+    "id": "199",
+    "title": {
+      "english": "Spirited Away",
+      "romaji": "Sen to Chihiro no Kamikakushi",
+      "native": "千と千尋の神隠し"
+    },
+    "coverImage": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx199-sWefXJvXkDOb.jpg",
+    "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/199-Sm2RU5PSqw7T.jpg",
+    "score": 4.3,
+    "malScore": 8.6,
+    "rank": 7,
+    "format": "Movie",
+    "status": "Finished",
+    "episodes": 1,
+    "durationMinutes": 125,
+    "season": "Summer",
+    "year": 2001,
+    "genres": [
+      "Adventure",
+      "Drama",
+      "Fantasy",
+      "Supernatural"
+    ],
+    "studios": [
+      "Studio Ghibli"
+    ],
+    "producers": [
+      "Studio Ghibli"
+    ],
+    "source": "Original",
+    "ageRating": "PG-13",
+    "synopsis": "On the way to their new home, 10-year-old Chihiro Ogino's family stumbles upon a deserted theme park. Intrigued, the family investigates the park, though unbeknownst to them, it is secretly inhabited by spirits who sleep by day and appear at night. When Chihiro's mother and father eat food from a restaurant in the street, angry spirits turn them into pigs. Furthermore, a wide sea has appeared between the spirit world and the human one, trapping Chihiro, the sole human, in a land of spirits. Luckily for her though, a mysterious boy named Haku appears, claiming to know her from the past. Under his instructions, Chihiro secures a job in the bathhouse where Haku works. With only her courage and some new found friends to aid her, Chihiro embarks on a journey to turn her parents back to their original forms and return home.",
+    "trailerYoutubeId": "ByXuk9QqQkk",
+    "scoreDistribution": {
+      "5.0": 17655,
+      "4.5": 8025,
+      "4.0": 3852,
+      "3.5": 1605,
+      "3.0": 642,
+      "2.5": 224,
+      "2.0": 64,
+      "1.0": 32
+    },
+    "streamingLinks": [
+      {
+        "name": "Crunchyroll",
+        "badge": "CR",
+        "url": "https://www.crunchyroll.com"
+      },
+      {
+        "name": "Netflix",
+        "badge": "NFX",
+        "url": "https://www.netflix.com"
+      }
+    ],
+    "characters": [
+      {
+        "id": "384",
+        "name": "Chihiro Ogino",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b384-AoWCsQyG0WI7.png",
+        "voiceActor": {
+          "name": "Rumi Hiiragi",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95772-ZfrpB9g3cspO.png"
+        }
+      },
+      {
+        "id": "385",
+        "name": "Haku",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b385-pKGCy3oYWxRa.png",
+        "voiceActor": {
+          "name": "Miyu Irino",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95088-BHyqnkadBEqi.png"
+        }
+      },
+      {
+        "id": "4716",
+        "name": "Yubaba",
+        "role": "Supporting",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b4716-8uiG2k2xQKvN.png",
+        "voiceActor": {
+          "name": "Mari Natsuki",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95946-bi8U3gyWQH3J.png"
+        }
+      },
+      {
+        "id": "5465",
+        "name": "Rin",
+        "role": "Supporting",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b5465-ZWJpBoYKPbAY.png",
+        "voiceActor": {
+          "name": "Yumi Tamai",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/6205.jpg"
+        }
+      }
+    ],
+    "themeSongs": {
+      "op": [
+        "Official Opening Theme"
+      ],
+      "ed": [
+        "Official Ending Theme"
+      ]
+    },
+    "episodesList": [
+      {
+        "number": 1,
+        "title": "Episode 1",
+        "airDate": "2001"
+      }
+    ]
+  },
+  {
+    "id": "16498",
+    "title": {
+      "english": "Attack on Titan",
+      "romaji": "Shingeki no Kyojin",
+      "native": "進撃の巨人"
+    },
+    "coverImage": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx16498-buvcRTBx4NSm.jpg",
+    "bannerImage": "https://s4.anilist.co/file/anilistcdn/media/anime/banner/16498-8jpFCOcDmneX.jpg",
+    "score": 4.25,
+    "malScore": 8.5,
+    "rank": 8,
+    "format": "TV",
+    "status": "Finished",
+    "episodes": 25,
+    "durationMinutes": 24,
+    "season": "Spring",
+    "year": 2013,
+    "genres": [
+      "Action",
+      "Drama",
+      "Fantasy",
+      "Mystery"
+    ],
+    "studios": [
+      "WIT STUDIO"
+    ],
+    "producers": [
+      "WIT STUDIO"
+    ],
+    "source": "Manga",
+    "ageRating": "PG-13",
+    "synopsis": "Several hundred years ago, humans were nearly exterminated by titans. Titans are typically several stories tall, seem to have no intelligence, devour human beings and, worst of all, seem to do it for the pleasure rather than as a food source. A small percentage of humanity survived by walling themselves in a city protected by extremely high walls, even taller than the biggest of titans.\n\n\r\nFlash forward to the present and the city has not seen a titan in over 100 years. Teenage boy Eren and his foster sister Mikasa witness something horrific as the city walls are destroyed by a colossal titan that appears out of thin air. As the smaller titans flood the city, the two kids watch in horror as their mother is eaten alive. Eren vows that he will murder every single titan and take revenge for all of mankind.\n\n\r\n(Source: MangaHelpers)",
+    "trailerYoutubeId": "LHtdKWJdif4\t",
+    "scoreDistribution": {
+      "5.0": 17462,
+      "4.5": 7937,
+      "4.0": 3810,
+      "3.5": 1587,
+      "3.0": 635,
+      "2.5": 222,
+      "2.0": 63,
+      "1.0": 31
+    },
+    "streamingLinks": [
+      {
+        "name": "Crunchyroll",
+        "badge": "CR",
+        "url": "https://www.crunchyroll.com"
+      },
+      {
+        "name": "Netflix",
+        "badge": "NFX",
+        "url": "https://www.netflix.com"
+      }
+    ],
+    "characters": [
+      {
+        "id": "40881",
+        "name": "Mikasa Ackerman",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b40881-F3gr1PkreDvj.png",
+        "voiceActor": {
+          "name": "Yui Ishikawa",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n100142-k6RP0HzXffUG.png"
+        }
+      },
+      {
+        "id": "40882",
+        "name": "Eren Yeager",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b40882-dsj7IP943WFF.jpg",
+        "voiceActor": {
+          "name": "Yuuki Kaji",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95672-T33YV7yCDKnL.png"
+        }
+      },
+      {
+        "id": "46494",
+        "name": "Armin Arlert",
+        "role": "Main",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b46494-g7xYYuBtYPnO.png",
+        "voiceActor": {
+          "name": "Marina Inoue",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95158-OLhgs8zv5xsp.jpg"
+        }
+      },
+      {
+        "id": "45627",
+        "name": "Levi",
+        "role": "Supporting",
+        "image": "https://s4.anilist.co/file/anilistcdn/character/large/b45627-CR68RyZmddGG.png",
+        "voiceActor": {
+          "name": "Hiroshi Kamiya",
+          "language": "Japanese",
+          "image": "https://s4.anilist.co/file/anilistcdn/staff/large/n95118-oOElrn1aSaiC.png"
+        }
+      }
+    ],
+    "themeSongs": {
+      "op": [
+        "Official Opening Theme"
+      ],
+      "ed": [
+        "Official Ending Theme"
+      ]
+    },
+    "episodesList": [
+      {
+        "number": 1,
+        "title": "Episode 1",
+        "airDate": "2013"
+      },
+      {
+        "number": 2,
+        "title": "Episode 2",
+        "airDate": "2013"
+      },
+      {
+        "number": 3,
+        "title": "Episode 3",
+        "airDate": "2013"
+      },
+      {
+        "number": 4,
+        "title": "Episode 4",
+        "airDate": "2013"
+      }
     ]
   }
 ];
 
 export const INITIAL_USER_PROFILE: UserProfile = {
   id: 'usr_me',
-  name: 'AstralReviewer',
-  handle: 'astral_ryo',
+  name: 'Anime Critic',
+  handle: 'anime_critic',
   avatar: 'https://s4.anilist.co/file/anilistcdn/character/large/b178491-j5YF6uP7tE0s.png',
-  banner: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-ivXNJrBlsvLw.jpg',
-  bio: 'Rating anime by the stars ✨ Film student & Sakuga enthusiast. Top 4 always rotating.',
-  website: 'https://hoshime.app/astral_ryo',
-  pronouns: 'he/they',
+  banner: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-ivXNJ23SM1xB.jpg',
+  bio: '',
+  website: '',
+  pronouns: '',
   joinedDate: 'Joined 2026',
-  isVip: true,
-  star4: ['154587', '9253', '199', '144665'],
-  followersCount: 1420,
-  followingCount: 388
+  isVip: false,
+  star4: [],
+  followersCount: 0,
+  followingCount: 0
 };
 
-// Removed all pre-made posts! Starting with a clean slate for real user logs
+// Clean fresh start: no premade logs, lists, or accounts
 export const INITIAL_LOG_ENTRIES: LogEntry[] = [];
 
-export const INITIAL_CUSTOM_LISTS: CustomList[] = [
-  {
-    id: 'list_1',
-    title: 'Existential & Emotional Masterpieces',
-    description: 'Stories that alter your brain chemistry and make you gaze at the starry night sky for hours after the credits roll.',
-    isRanked: true,
-    privacy: 'public',
-    bannerCover: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-ivXNJrBlsvLw.jpg',
-    author: {
-      name: 'AstralReviewer',
-      handle: 'astral_ryo',
-      avatar: 'https://s4.anilist.co/file/anilistcdn/character/large/b178491-j5YF6uP7tE0s.png',
-      isVip: true
-    },
-    items: [
-      { animeId: '154587', rank: 1, commentary: 'The definitive examination of time, aging, and unspoken bonds.' },
-      { animeId: '21827', rank: 2, commentary: 'Every single episode is a tearjerker of human devotion.' },
-      { animeId: '9253', rank: 3, commentary: 'Sci-fi perfection. The heartbreak of changing world lines.' }
-    ],
-    likes: 832,
-    isLikedByMe: false,
-    createdAt: 'Oct 2026'
-  }
-];
+export const INITIAL_CUSTOM_LISTS: CustomList[] = [];
 
 export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   {
-    id: 'notif_1',
+    id: 'notif_welcome',
     type: 'system',
     title: 'Welcome to Hoshime',
-    description: 'Your star anime diary is ready. Rate any anime with 0.5-5.0 stars!',
+    description: 'Your anime star diary is ready. Search titles via live API, rate anime with 0.5-5.0 stars, and pin your Top 3 favorites!',
     timestamp: 'Just now',
     isRead: false
   }

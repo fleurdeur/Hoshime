@@ -27,6 +27,7 @@ const MainAppContent: React.FC = () => {
     setIsSearchOpen,
     isOnboardingOpen,
     setIsOnboardingOpen,
+    isAuthenticated,
     theme
   } = useApp();
 
@@ -46,6 +47,29 @@ const MainAppContent: React.FC = () => {
       window.removeEventListener('hoshime_open_settings', handleOpenSettings);
     };
   }, []);
+
+  // Login First: Force authentication gate if user has no active session
+  if (!isAuthenticated) {
+    return (
+      <div
+        className={`min-h-full flex flex-col transition-colors ${
+          theme === 'starry'
+            ? 'bg-black text-slate-100'
+            : theme === 'light'
+            ? 'bg-slate-900 text-slate-100'
+            : 'bg-[#0B0E14] text-slate-100'
+        }`}
+      >
+        <AndroidFrame>
+          <OnboardingView
+            isOpen={true}
+            onClose={() => {}}
+            isMandatoryAuth={true}
+          />
+        </AndroidFrame>
+      </div>
+    );
+  }
 
   return (
     <div

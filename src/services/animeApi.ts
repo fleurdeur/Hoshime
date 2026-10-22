@@ -99,7 +99,7 @@ export function transformAniListMedia(media: any): Anime {
   });
 
   // Calculate synthetic score distribution matching average score
-  const totalRatings = Math.floor(rawScore * 350 + Math.random() * 5000);
+  const totalRatings = Math.floor(rawScore * 350 + 2000);
   const scoreDist: Record<string, number> = {
     '5.0': Math.floor(totalRatings * (rawScore >= 85 ? 0.55 : 0.35)),
     '4.5': Math.floor(totalRatings * 0.25),
@@ -125,7 +125,6 @@ export function transformAniListMedia(media: any): Anime {
   const nativeTitle = media.title?.native || romajiTitle;
 
   const coverUrl = media.coverImage?.extraLarge || media.coverImage?.large;
-  // If bannerImage is missing, use YouTube trailer high-res maxresdefault thumbnail or cover
   const trailerThumb = media.trailer?.site === 'youtube' && media.trailer.id 
     ? `https://img.youtube.com/vi/${media.trailer.id}/maxresdefault.jpg` 
     : undefined;
@@ -186,7 +185,120 @@ export function transformAniListMedia(media: any): Anime {
   };
 }
 
-// Fetch live anime list from AniList
+const apiSearchCache = new Map<string, Anime[]>();
+
+// Fast, dedicated live API search for reviews, Top 3 picking, and lists
+export async function searchAnimeApi(search: string, limit: number = 20): Promise<Anime[]> {
+  const clean = search.trim();
+  if (!clean) return [];
+
+  const cacheKey = `${clean.toLowerCase()}_${limit}`;
+  if (apiSearchCache.has(cacheKey)) {
+    return apiSearchCache.get(cacheKey)!;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+    const res = await fetch(ANILIST_GRAPHQL_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        query: POPULAR_ANIME_QUERY,
+        variables: {
+          search: clean,
+          page: 1,
+          perPage: limit,
+          sort: ['SEARCH_MATCH', 'POPULARITY_DESC']
+        }
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      const mediaList = data?.data?.Page?.media || [];
+      const anime = mediaList.map((m: any, idx: number) => {
+        const transformed = transformAniListMedia(m);
+        transformed.rank = idx + 1;
+        return transformed;
+      });
+      apiSearchCache.set(cacheKey, anime);
+      return anime;
+    }
+  } catch (err) {
+    console.warn('Live AniList search error:', err);
+  }
+
+  return [];
+}
+
+// Fetch single anime by ID from AniList
+export async function getAnimeByIdApi(id: string): Promise<Anime | null> {
+  const numericId = parseInt(id, 10);
+  if (isNaN(numericId)) return null;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+    const query = `
+      query ($id: Int) {
+        Media(id: $id, type: ANIME) {
+          id
+          title { romaji english native }
+          coverImage { extraLarge large color }
+          bannerImage
+          averageScore
+          meanScore
+          format
+          status
+          episodes
+          duration
+          season
+          seasonYear
+          genres
+          studios(isMain: true) { nodes { name } }
+          source
+          description(asHtml: false)
+          trailer { id site }
+          characters(perPage: 6, sort: ROLE) {
+            edges {
+              role
+              node { id name { full } image { large } }
+              voiceActors(language: JAPANESE) { id name { full } image { large } languageV2 }
+            }
+          }
+        }
+      }
+    `;
+
+    const res = await fetch(ANILIST_GRAPHQL_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ query, variables: { id: numericId } }),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.data?.Media) {
+        return transformAniListMedia(data.data.Media);
+      }
+    }
+  } catch (e) {
+    console.warn(`Failed to fetch anime ID ${id}:`, e);
+  }
+  return null;
+}
+
+// Fetch live catalog from AniList
 export async function fetchLiveAnimeCatalog(params: {
   page?: number;
   perPage?: number;
@@ -208,6 +320,9 @@ export async function fetchLiveAnimeCatalog(params: {
       variables.genre = params.genre;
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
+
     const res = await fetch(ANILIST_GRAPHQL_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -217,8 +332,10 @@ export async function fetchLiveAnimeCatalog(params: {
       body: JSON.stringify({
         query: POPULAR_ANIME_QUERY,
         variables
-      })
+      }),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       throw new Error(`AniList HTTP error: ${res.status}`);
@@ -240,121 +357,7 @@ export async function fetchLiveAnimeCatalog(params: {
       hasNextPage: !!pageInfo.hasNextPage
     };
   } catch (err) {
-    console.warn('Live AniList fetch failed, attempting Jikan API fallback:', err);
-    // If AniList fails or rate-limits, fall back to official Jikan (MyAnimeList) API
-    return fetchJikanAnimeCatalog({
-      page: params.page,
-      search: params.search,
-      limit: params.perPage
-    });
-  }
-}
-
-// Jikan v4 REST API (Official MyAnimeList Open Source API for anime images and data)
-const JIKAN_BASE_URL = 'https://api.jikan.moe/v4';
-
-export async function fetchJikanAnimeCatalog(params: {
-  page?: number;
-  search?: string;
-  limit?: number;
-}): Promise<{ anime: Anime[]; total: number; hasNextPage: boolean }> {
-  try {
-    const page = params.page || 1;
-    const limit = params.limit || 24;
-    let url = `${JIKAN_BASE_URL}/top/anime?page=${page}&limit=${limit}`;
-
-    if (params.search && params.search.trim()) {
-      url = `${JIKAN_BASE_URL}/anime?q=${encodeURIComponent(params.search.trim())}&page=${page}&limit=${limit}`;
-    }
-
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`Jikan HTTP error: ${res.status}`);
-    }
-
-    const data = await res.json();
-    const items = data.data || [];
-    const pagination = data.pagination || {};
-
-    const anime: Anime[] = items.map((item: any, idx: number) => {
-      const malScore = item.score || 8.0;
-      const hoshimeScore = Number((malScore / 2).toFixed(2));
-      const coverUrl = item.images?.webp?.large_image_url || item.images?.jpg?.large_image_url || item.images?.webp?.image_url;
-      const trailerThumb = item.trailer?.images?.maximum_image_url || item.trailer?.images?.large_image_url;
-      const bannerUrl = trailerThumb || coverUrl;
-
-      return {
-        id: `mal_${item.mal_id}`,
-        title: {
-          english: item.title_english || item.title || 'Anime',
-          romaji: item.title || item.title_english || 'Anime',
-          native: item.title_japanese || item.title || ''
-        },
-        coverImage: coverUrl,
-        bannerImage: bannerUrl,
-        score: hoshimeScore,
-        malScore: malScore,
-        rank: (page - 1) * limit + idx + 1,
-        format: item.type === 'Movie' ? 'Movie' : item.type === 'OVA' ? 'OVA' : 'TV',
-        status: item.status === 'Currently Airing' ? 'Airing' : item.status === 'Not yet aired' ? 'Upcoming' : 'Finished',
-        episodes: item.episodes || 12,
-        durationMinutes: 24,
-        season: item.season ? (item.season.charAt(0).toUpperCase() + item.season.slice(1)) as any : 'Fall',
-        year: item.year || new Date().getFullYear(),
-        genres: (item.genres || []).map((g: any) => g.name),
-        studios: (item.studios || []).map((s: any) => s.name),
-        producers: (item.producers || []).map((p: any) => p.name),
-        source: item.source || 'Manga',
-        ageRating: item.rating || 'PG-13',
-        synopsis: (item.synopsis || 'No synopsis available.').trim(),
-        trailerYoutubeId: item.trailer?.youtube_id || undefined,
-        scoreDistribution: {
-          '5.0': 35000,
-          '4.5': 18000,
-          '4.0': 8000,
-          '3.5': 2000,
-          '3.0': 500,
-          '2.5': 200,
-          '2.0': 100,
-          '1.0': 50
-        },
-        streamingLinks: [
-          { name: 'Crunchyroll', badge: 'CR', url: 'https://www.crunchyroll.com' },
-          { name: 'Netflix', badge: 'NFX', url: 'https://www.netflix.com' }
-        ],
-        characters: [
-          {
-            id: `c_${item.mal_id}`,
-            name: 'Lead Character',
-            role: 'Main',
-            image: coverUrl,
-            voiceActor: {
-              name: 'Japanese Cast',
-              language: 'Japanese',
-              image: coverUrl
-            }
-          }
-        ],
-        themeSongs: {
-          op: ['Official Opening Theme'],
-          ed: ['Official Ending Theme']
-        },
-        episodesList: Array.from({ length: Math.min(item.episodes || 12, 12) }).map((_, i) => ({
-          number: i + 1,
-          title: `Episode ${i + 1}`,
-          airDate: `${item.year || 2024}`
-        }))
-      };
-    });
-
-    return {
-      anime,
-      total: pagination.items?.total || anime.length,
-      hasNextPage: !!pagination.has_next_page
-    };
-  } catch (e) {
-    console.warn('Jikan fetch failed:', e);
+    console.warn('Live AniList fetch error:', err);
     return { anime: [], total: 0, hasNextPage: false };
   }
 }
-

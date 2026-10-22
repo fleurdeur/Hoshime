@@ -1,27 +1,51 @@
 import {
   BarChart3,
   Calendar,
+  Camera,
   Check,
   Edit3,
   ExternalLink,
   Flame,
   Heart,
+  Image as ImageIcon,
   Layers,
+  Loader2,
   MessageSquare,
   PieChart,
   Plus,
   RotateCcw,
+  Search,
   Share2,
   Sparkles,
   Star,
+  Trash2,
   Tv,
+  Upload,
   X
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AnimeImage } from '../components/AnimeImage';
 import { StarRating } from '../components/StarRating';
+import { UserAvatar } from '../components/UserAvatar';
 import { useApp } from '../context/AppContext';
-import { WatchStatus } from '../types/anime';
+import { searchAnimeApi } from '../services/animeApi';
+import { Anime, WatchStatus } from '../types/anime';
+
+const AVATAR_PRESETS = [
+  { name: 'Frieren', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b178491-j5YF6uP7tE0s.png' },
+  { name: 'Denji', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b130138-sA07b9h2H7nO.png' },
+  { name: 'Gojo', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b127993-zC7a3d1b9e0f.png' },
+  { name: 'Bocchi', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b192806-u7K0q8B2D0t3.png' },
+  { name: 'Violet', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b124483-C9pL1n4k0f8j.png' },
+  { name: 'Eren', url: 'https://s4.anilist.co/file/anilistcdn/character/large/b40882-6p7q8r9s0t1u.png' }
+];
+
+const BANNER_PRESETS = [
+  { name: 'Frieren Journey', url: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/154587-ivXNJ23SM1xB.jpg' },
+  { name: 'Chainsaw City', url: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/127230-o8IRwCGVr9KW.jpg' },
+  { name: 'Bocchi Live STARRY', url: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/130003-5F90a7BtsPQN.jpg' },
+  { name: 'Jujutsu Night', url: 'https://s4.anilist.co/file/anilistcdn/media/anime/banner/113415-jQBSkxWAAk83.jpg' }
+];
 
 export const ProfileView: React.FC = () => {
   const {
@@ -29,6 +53,7 @@ export const ProfileView: React.FC = () => {
     updateUserProfile,
     userLibrary,
     animeList,
+    addAnimeToDatabase,
     logs,
     customLists,
     updateStar4,
@@ -40,11 +65,62 @@ export const ProfileView: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'diary' | 'reviews' | 'watchlist' | 'lists' | 'stats'>('diary');
   const [watchlistFilter, setWatchlistFilter] = useState<WatchStatus>('Watching');
+
+  // Edit Profile State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editTab, setEditTab] = useState<'info' | 'avatar' | 'banner'>('info');
   const [editName, setEditName] = useState(userProfile.name);
   const [editBio, setEditBio] = useState(userProfile.bio);
+  const [editAvatar, setEditAvatar] = useState(userProfile.avatar);
+  const [editBanner, setEditBanner] = useState(userProfile.banner);
+  const [editWebsite, setEditWebsite] = useState(userProfile.website || '');
+  const [editPronouns, setEditPronouns] = useState(userProfile.pronouns || '');
+
+  // File upload refs
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
+  const bannerFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Top 3 Favorite Swap Modal State
   const [isSwapStar4Open, setIsSwapStar4Open] = useState(false);
   const [swapSlotIndex, setSwapSlotIndex] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [apiSearchResults, setApiSearchResults] = useState<Anime[]>([]);
+  const [isSearchingApi, setIsSearchingApi] = useState(false);
+
+  // Sync edit fields when profile updates
+  useEffect(() => {
+    setEditName(userProfile.name);
+    setEditBio(userProfile.bio);
+    setEditAvatar(userProfile.avatar);
+    setEditBanner(userProfile.banner);
+    setEditWebsite(userProfile.website || '');
+    setEditPronouns(userProfile.pronouns || '');
+  }, [userProfile]);
+
+  // Debounced API search for Top 3 Picker
+  useEffect(() => {
+    if (!isSwapStar4Open) return;
+    const clean = searchQuery.trim();
+    if (!clean) {
+      setApiSearchResults([]);
+      setIsSearchingApi(false);
+      return;
+    }
+
+    setIsSearchingApi(true);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const results = await searchAnimeApi(clean, 15);
+        setApiSearchResults(results);
+      } catch (e) {
+        console.warn('Top 3 search error:', e);
+      } finally {
+        setIsSearchingApi(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, isSwapStar4Open]);
 
   // Listen to external tab switch events from Navigation Drawer
   useEffect(() => {
@@ -67,9 +143,6 @@ export const ProfileView: React.FC = () => {
 
   // My Custom Lists
   const myLists = customLists.filter((l) => l.author.handle === userProfile.handle);
-
-  // Star 4 anime objects
-  const star4Anime = userProfile.star4.map((id) => animeList.find((a) => a.id === id)).filter(Boolean);
 
   // Watchlist filtered
   const filteredWatchlist = libraryEntries
@@ -106,24 +179,78 @@ export const ProfileView: React.FC = () => {
     else ratingCounts[key] = 1;
   });
 
+  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setEditAvatar(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleBannerFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setEditBanner(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSaveProfile = () => {
-    updateUserProfile({ name: editName, bio: editBio });
+    updateUserProfile({
+      name: editName.trim() || userProfile.name,
+      bio: editBio.trim(),
+      avatar: editAvatar,
+      banner: editBanner,
+      website: editWebsite.trim(),
+      pronouns: editPronouns.trim()
+    });
     setIsEditingProfile(false);
   };
 
-  const handleSwapStar4 = (animeId: string) => {
+  const handleSelectTopAnime = (anime: Anime) => {
     if (swapSlotIndex === null) return;
-    const newStar4 = [...userProfile.star4];
-    newStar4[swapSlotIndex] = animeId;
+    addAnimeToDatabase(anime);
+
+    const newStar4 = [...(userProfile.star4 || [])];
+    while (newStar4.length < 3) {
+      newStar4.push('');
+    }
+    newStar4[swapSlotIndex] = anime.id;
     updateStar4(newStar4);
+
     setIsSwapStar4Open(false);
     setSwapSlotIndex(null);
+    setSearchQuery('');
   };
+
+  const handleRemoveTopAnime = (slotIdx: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newStar4 = [...(userProfile.star4 || [])];
+    newStar4[slotIdx] = '';
+    updateStar4(newStar4);
+  };
+
+  // Top 3 slot ranks metadata
+  const TOP_SLOTS = [
+    { rank: 1, label: '#1 Favorite', badge: 'bg-amber-400 text-slate-950', ring: 'ring-amber-400/60' },
+    { rank: 2, label: '#2 Favorite', badge: 'bg-slate-300 text-slate-950', ring: 'ring-slate-300/60' },
+    { rank: 3, label: '#3 Favorite', badge: 'bg-amber-600 text-white', ring: 'ring-amber-600/60' }
+  ];
 
   return (
     <div className="pb-28 max-w-4xl mx-auto text-white">
-      {/* 1. COVER BANNER */}
-      <div className="relative w-full h-36 sm:h-48 overflow-hidden bg-slate-900">
+      {/* 1. COVER BANNER (EDITABLE) */}
+      <div className="relative w-full h-36 sm:h-48 overflow-hidden bg-slate-900 group">
         <AnimeImage
           src={userProfile.banner}
           alt="Profile Banner"
@@ -131,33 +258,55 @@ export const ProfileView: React.FC = () => {
           containerClassName="w-full h-full"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-transparent to-black/40 pointer-events-none" />
+
+        {/* Change Banner Button */}
+        <button
+          onClick={() => {
+            setEditTab('banner');
+            setIsEditingProfile(true);
+          }}
+          className="absolute top-3 right-3 z-10 px-3 py-1.5 rounded-xl bg-black/60 hover:bg-black/85 backdrop-blur-md border border-white/20 text-xs font-semibold text-white flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity"
+        >
+          <Camera className="w-3.5 h-3.5" />
+          <span>Edit Banner</span>
+        </button>
       </div>
 
       {/* 2. USER HEADER SECTION */}
       <div className="px-4 -mt-14 relative z-10 space-y-4">
         <div className="flex items-end justify-between">
-          {/* Avatar with Star Frame */}
-          <div className="relative">
+          {/* Avatar with Camera Overlay (EDITABLE) */}
+          <div className="relative group">
             <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-amber-400 via-purple-500 to-amber-300 shadow-[0_0_20px_rgba(255,193,7,0.4)]">
-              <AnimeImage
+              <UserAvatar
                 src={userProfile.avatar}
-                alt={userProfile.name}
-                aspectRatio="square"
-                containerClassName="w-full h-full rounded-full"
-                className="rounded-full"
+                name={userProfile.name}
+                size="xl"
+                className="w-full h-full"
               />
             </div>
-            {userProfile.isVip && (
-              <div className="absolute bottom-1 right-1 bg-amber-400 p-1 rounded-full text-slate-950 shadow">
-                <Sparkles className="w-3.5 h-3.5 fill-slate-950" />
-              </div>
-            )}
+
+            {/* Quick Click to Edit Avatar */}
+            <button
+              onClick={() => {
+                setEditTab('avatar');
+                setIsEditingProfile(true);
+              }}
+              className="absolute inset-1 rounded-full bg-black/50 backdrop-blur-[2px] flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer border border-amber-400/40"
+              title="Change Profile Picture"
+            >
+              <Camera className="w-5 h-5 text-amber-300" />
+              <span className="text-[10px] font-bold text-white mt-0.5">Edit</span>
+            </button>
           </div>
 
           {/* Action buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setIsEditingProfile(true)}
+              onClick={() => {
+                setEditTab('info');
+                setIsEditingProfile(true);
+              }}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-400 text-xs font-semibold text-slate-200 transition-colors shadow-sm"
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -194,9 +343,15 @@ export const ProfileView: React.FC = () => {
             {userProfile.pronouns && <span>· {userProfile.pronouns}</span>}
             <span>· {userProfile.joinedDate}</span>
           </div>
-          <p className="text-sm text-slate-200 pt-1 leading-relaxed max-w-lg">
-            {userProfile.bio}
-          </p>
+          {userProfile.bio ? (
+            <p className="text-sm text-slate-200 pt-1 leading-relaxed max-w-lg">
+              {userProfile.bio}
+            </p>
+          ) : (
+            <p className="text-xs text-slate-400 italic pt-1">
+              No bio yet. Tap "Edit Profile" to share your anime tastes!
+            </p>
+          )}
         </div>
 
         {/* Stats Counter Bar */}
@@ -233,53 +388,86 @@ export const ProfileView: React.FC = () => {
           </div>
         </div>
 
-        {/* 3. "THE STAR 4" (FAVORITE ANIME SHOWCASE) */}
-        <section className="space-y-2 pt-2">
+        {/* 3. "TOP 3 FAVORITES" (API SEARCHABLE SHOWCASE) */}
+        <section className="space-y-2.5 pt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               <h3 className="font-display font-bold text-sm text-white">
-                The Star 4 (Ultimate Favorites)
+                Top 3 Favorites (Curated Masterpieces)
               </h3>
             </div>
-            <span className="text-[10px] text-slate-400">Tap poster to swap</span>
+            <span className="text-[10px] text-slate-400">Search via AniList API to pick</span>
           </div>
 
-          <div className="grid grid-cols-4 gap-2.5">
-            {userProfile.star4.map((id, index) => {
-              const a = animeList.find((x) => x.id === id);
+          <div className="grid grid-cols-3 gap-3">
+            {TOP_SLOTS.map((slot, index) => {
+              const animeId = userProfile.star4?.[index];
+              const anime = animeId ? animeList.find((x) => x.id === animeId) : null;
 
               return (
                 <div
                   key={index}
                   onClick={() => {
                     setSwapSlotIndex(index);
+                    setSearchQuery('');
+                    setApiSearchResults([]);
                     setIsSwapStar4Open(true);
                   }}
-                  className="group relative aspect-[2/3] rounded-2xl overflow-hidden border border-slate-800 hover:border-amber-400 cursor-pointer shadow-lg transition-all bg-slate-900"
+                  className={`group relative aspect-[2/3] rounded-2xl overflow-hidden border border-slate-800 hover:border-amber-400 cursor-pointer shadow-lg transition-all bg-slate-900 ${
+                    anime ? slot.ring : ''
+                  }`}
                 >
-                  {a ? (
+                  {anime ? (
                     <>
                       <AnimeImage
-                        src={a.coverImage}
-                        fallbackSrc={a.bannerImage}
-                        alt={getAnimeTitle(a)}
+                        src={anime.coverImage}
+                        fallbackSrc={anime.bannerImage}
+                        alt={getAnimeTitle(anime)}
                         aspectRatio="poster"
                         containerClassName="w-full h-full"
                         className="group-hover:scale-105 transition-transform"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-2 pointer-events-none">
-                        <span className="font-bold text-xs text-white truncate">
-                          {getAnimeTitle(a)}
+
+                      {/* Rank Badge */}
+                      <div className="absolute top-2 left-2 z-10">
+                        <span className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-bold shadow-md ${slot.badge}`}>
+                          #{slot.rank}
                         </span>
-                        <span className="font-mono text-xs text-amber-300 font-bold">
-                          ★ {a.score.toFixed(1)}
+                      </div>
+
+                      {/* Remove Button */}
+                      <button
+                        onClick={(e) => handleRemoveTopAnime(index, e)}
+                        className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-black/70 hover:bg-rose-600 text-slate-300 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove from Top 3"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Bottom Info Gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-2.5 pointer-events-none">
+                        <span className="font-bold text-xs text-white truncate drop-shadow">
+                          {getAnimeTitle(anime)}
                         </span>
+                        <div className="flex items-center justify-between text-[10px] text-amber-300 font-mono mt-0.5 font-bold">
+                          <span>★ {anime.score.toFixed(1)}</span>
+                          <span className="text-slate-400 font-normal">{anime.year}</span>
+                        </div>
                       </div>
                     </>
                   ) : (
-                    <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-600">
-                      <Plus className="w-6 h-6" />
+                    /* Empty Slot Card */
+                    <div className="w-full h-full p-3 border-2 border-dashed border-slate-800 group-hover:border-amber-400/60 rounded-2xl flex flex-col items-center justify-center text-center transition-colors">
+                      <div className="w-9 h-9 rounded-full bg-slate-800/80 group-hover:bg-amber-400/20 text-slate-400 group-hover:text-amber-400 flex items-center justify-center mb-1.5 transition-colors">
+                        <Plus className="w-5 h-5" />
+                      </div>
+                      <span className="font-bold text-xs text-slate-300 group-hover:text-amber-300">
+                        Top #{slot.rank}
+                      </span>
+                      <span className="text-[10px] text-slate-500 mt-0.5">
+                        Pick Anime (API)
+                      </span>
                     </div>
                   )}
                 </div>
@@ -300,10 +488,10 @@ export const ProfileView: React.FC = () => {
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id as any)}
-              className={`py-3 whitespace-nowrap border-b-2 transition-colors ${
+              className={`pb-3 text-xs sm:text-sm font-bold whitespace-nowrap transition-colors relative ${
                 activeTab === t.id
-                  ? 'border-amber-400 text-amber-400 font-bold'
-                  : 'border-transparent text-slate-400 hover:text-white'
+                  ? 'text-amber-400 border-b-2 border-amber-400'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               {t.label}
@@ -311,55 +499,45 @@ export const ProfileView: React.FC = () => {
           ))}
         </div>
 
-        {/* TAB 1: DIARY (Chronological watch log) */}
+        {/* TAB 1: WATCH DIARY */}
         {activeTab === 'diary' && (
           <div className="space-y-3">
             {logs.length === 0 ? (
-              <div className="py-12 px-4 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-2">
-                <Sparkles className="w-8 h-8 text-amber-400/60 mx-auto mb-2" />
-                <h4 className="font-display font-bold text-base text-white">Your Viewing Diary is Empty</h4>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  Start logging your watched episodes and ratings to create your anime timeline.
-                </p>
+              <div className="py-12 text-center text-xs text-slate-400 rounded-2xl bg-slate-900/40 border border-slate-800">
+                <Sparkles className="w-6 h-6 text-amber-400/60 mx-auto mb-2" />
+                <p className="font-semibold text-slate-300">Your diary is empty</p>
+                <p className="text-slate-500 mt-0.5">Rate or review an anime to start your journey!</p>
               </div>
             ) : (
               logs.map((log) => (
                 <div
                   key={log.id}
-                  className="p-3.5 rounded-2xl bg-[#111622] border border-slate-800 flex items-center justify-between gap-3 text-xs shadow-sm hover:border-slate-700 transition-colors"
+                  onClick={() => setSelectedAnimeId(log.animeId)}
+                  className="p-3 rounded-2xl bg-[#111622] border border-slate-800 hover:border-slate-700 cursor-pointer flex items-center justify-between gap-3 text-xs"
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
-                    <div
-                      onClick={() => setSelectedAnimeId(log.animeId)}
-                      className="w-12 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-800 cursor-pointer bg-slate-900"
-                    >
-                      <AnimeImage
-                        src={log.animeCover}
-                        alt={getAnimeTitle(log.animeTitle)}
-                        aspectRatio="poster"
-                        containerClassName="w-full h-full"
-                      />
-                    </div>
-
-                    <div className="overflow-hidden">
-                      <h4
-                        onClick={() => setSelectedAnimeId(log.animeId)}
-                        className="font-bold text-white text-sm hover:text-amber-300 cursor-pointer truncate"
-                      >
+                    <img
+                      src={log.animeCover}
+                      alt={getAnimeTitle(log.animeTitle)}
+                      referrerPolicy="no-referrer"
+                      className="w-10 h-14 rounded-lg object-cover shrink-0"
+                    />
+                    <div className="truncate">
+                      <h4 className="font-bold text-white text-sm truncate">
                         {getAnimeTitle(log.animeTitle)}
                       </h4>
-                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                        <span>{log.dateWatched}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>{log.episodeLogged ? `Ep ${log.episodeLogged}` : 'Completed'}</span>
-                        {log.isRewatch && <span className="text-purple-300 font-semibold">· Rewatch</span>}
-                      </div>
+                      <p className="text-[11px] text-slate-400">
+                        Watched on {log.dateWatched} · {log.animeFormat}
+                      </p>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <StarRating rating={log.rating} size="sm" showScoreText={true} />
-                    {log.isLike && <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />}
+                  <div className="shrink-0 text-right">
+                    <span className="font-mono text-sm font-bold text-amber-400 block">
+                      ★ {log.rating.toFixed(1)}
+                    </span>
+                    {log.isRewatch && (
+                      <span className="text-[10px] text-purple-400 font-mono">Rewatch</span>
+                    )}
                   </div>
                 </div>
               ))
@@ -369,33 +547,30 @@ export const ProfileView: React.FC = () => {
 
         {/* TAB 2: REVIEWS */}
         {activeTab === 'reviews' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {myReviews.length === 0 ? (
-              <div className="py-12 px-4 text-center rounded-2xl bg-slate-900/40 border border-slate-800/80 space-y-2">
-                <Star className="w-8 h-8 text-amber-400/60 mx-auto mb-2" />
-                <h4 className="font-display font-bold text-base text-white">No Written Reviews Yet</h4>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                  When you log an anime review, your full critique and star rating will be featured here.
-                </p>
+              <div className="py-12 text-center text-xs text-slate-400 rounded-2xl bg-slate-900/40 border border-slate-800">
+                <MessageSquare className="w-6 h-6 text-amber-400/60 mx-auto mb-2" />
+                <p className="font-semibold text-slate-300">No written reviews yet</p>
+                <p className="text-slate-500 mt-0.5">Use the Star button to log an entry with a review!</p>
               </div>
             ) : (
               myReviews.map((r) => (
                 <div
                   key={r.id}
-                  className="p-4 rounded-2xl bg-[#111622] border border-slate-800 space-y-2 text-xs shadow-sm"
+                  className="p-4 rounded-3xl bg-[#111622] border border-slate-800 space-y-3 text-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <h4
-                      onClick={() => setSelectedAnimeId(r.animeId)}
-                      className="font-bold text-white hover:text-amber-300 cursor-pointer text-base"
-                    >
+                    <span className="font-bold text-white text-sm">
                       {getAnimeTitle(r.animeTitle)}
-                    </h4>
-                    <StarRating rating={r.rating} size="sm" showScoreText={true} />
+                    </span>
+                    <StarRating rating={r.rating} size="sm" />
                   </div>
-                  <p className="text-sm text-slate-200 leading-relaxed">{r.reviewText}</p>
-                  <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
-                    <span>Logged {r.dateWatched}</span>
+                  {r.reviewText && (
+                    <p className="text-slate-300 leading-relaxed">{r.reviewText}</p>
+                  )}
+                  <div className="flex items-center justify-between text-slate-400 text-[11px] pt-1 border-t border-slate-800/80">
+                    <span>{r.dateWatched}</span>
                     <button
                       onClick={() => openShareStory(r)}
                       className="text-amber-400 hover:underline flex items-center gap-1 font-semibold text-xs"
@@ -413,7 +588,6 @@ export const ProfileView: React.FC = () => {
         {/* TAB 3: WATCHLIST */}
         {activeTab === 'watchlist' && (
           <div className="space-y-4">
-            {/* Watchlist Status Filter Chips */}
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
               {(['Watching', 'Plan to Watch', 'Completed', 'On Hold', 'Dropped'] as WatchStatus[]).map(
                 (status) => (
@@ -471,28 +645,33 @@ export const ProfileView: React.FC = () => {
         {/* TAB 4: LISTS */}
         {activeTab === 'lists' && (
           <div className="space-y-3">
-            {myLists.map((l) => (
-              <div
-                key={l.id}
-                onClick={() => setSelectedListId(l.id)}
-                className="p-3.5 rounded-2xl bg-[#111622] border border-slate-800 hover:border-purple-400 cursor-pointer flex items-center justify-between text-xs"
-              >
-                <div>
-                  <h4 className="font-bold text-white">{l.title}</h4>
-                  <p className="text-slate-400 text-[11px] mt-0.5">
-                    {l.items.length} titles · ♥ {l.likes}
-                  </p>
+            {myLists.length === 0 ? (
+              <p className="py-8 text-center text-xs text-slate-400">
+                No custom lists created yet. Head over to Lists & Community to build one!
+              </p>
+            ) : (
+              myLists.map((l) => (
+                <div
+                  key={l.id}
+                  onClick={() => setSelectedListId(l.id)}
+                  className="p-3.5 rounded-2xl bg-[#111622] border border-slate-800 hover:border-purple-400 cursor-pointer flex items-center justify-between text-xs"
+                >
+                  <div>
+                    <h4 className="font-bold text-white">{l.title}</h4>
+                    <p className="text-slate-400 text-[11px] mt-0.5">
+                      {l.items.length} titles · ♥ {l.likes}
+                    </p>
+                  </div>
+                  <span className="text-amber-400 text-xs font-semibold">View</span>
                 </div>
-                <span className="text-amber-400 text-xs font-semibold">View</span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
 
-        {/* TAB 5: STATS & ANALYTICS VISUALIZATIONS */}
+        {/* TAB 5: STATS */}
         {activeTab === 'stats' && (
           <div className="space-y-6 text-xs">
-            {/* Genre Breakdown */}
             <div className="p-4 rounded-3xl bg-[#111622] border border-slate-800 space-y-3">
               <div className="flex items-center gap-2">
                 <PieChart className="w-4 h-4 text-amber-400" />
@@ -500,179 +679,458 @@ export const ProfileView: React.FC = () => {
                   Favorite Genres Distribution
                 </h4>
               </div>
-
-              <div className="space-y-2 font-mono">
-                {Object.entries(genreCounts)
-                  .sort((a, b) => b[1] - a[1])
-                  .slice(0, 5)
-                  .map(([genre, count]) => {
-                    const percent = Math.round((count / (completedEntries.length || 1)) * 100);
-
+              <div className="space-y-2">
+                {Object.entries(genreCounts).length === 0 ? (
+                  <p className="text-slate-500 text-xs">Complete anime watches to view your genre breakdown.</p>
+                ) : (
+                  Object.entries(genreCounts).map(([genre, count]) => {
+                    const total = completedEntries.length || 1;
+                    const percent = Math.round((count / total) * 100);
                     return (
                       <div key={genre} className="space-y-1">
-                        <div className="flex items-center justify-between text-slate-300">
+                        <div className="flex justify-between text-slate-300">
                           <span>{genre}</span>
-                          <span className="text-amber-400 font-bold">{count} ({percent}%)</span>
+                          <span className="font-mono text-amber-400">{count} titles ({percent}%)</span>
                         </div>
                         <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-amber-400 to-purple-500 rounded-full"
-                            style={{ width: `${Math.min(100, percent)}%` }}
+                            className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full"
+                            style={{ width: `${Math.min(percent, 100)}%` }}
                           />
                         </div>
                       </div>
                     );
-                  })}
-              </div>
-            </div>
-
-            {/* Score Habit Bar Chart */}
-            <div className="p-4 rounded-3xl bg-[#111622] border border-slate-800 space-y-3">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-purple-400" />
-                <h4 className="font-display font-bold text-sm text-white">
-                  Rating Distribution & Habits
-                </h4>
-              </div>
-
-              <div className="flex items-end justify-between h-32 pt-4 px-2">
-                {Object.entries(ratingCounts).map(([star, count]) => {
-                  const maxCount = Math.max(...Object.values(ratingCounts), 1);
-                  const heightPercent = Math.round((count / maxCount) * 100);
-
-                  return (
-                    <div key={star} className="flex flex-col items-center gap-1.5 flex-1">
-                      <span className="font-mono text-[10px] text-amber-400 font-bold">
-                        {count}
-                      </span>
-                      <div className="w-6 bg-slate-800 rounded-t-lg overflow-hidden flex flex-col justify-end h-20">
-                        <div
-                          className="w-full bg-gradient-to-t from-amber-500 to-amber-300 rounded-t-lg transition-all"
-                          style={{ height: `${heightPercent}%` }}
-                        />
-                      </div>
-                      <span className="font-mono text-[10px] text-slate-400">
-                        {star}★
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Decades Breakdown */}
-            <div className="p-4 rounded-3xl bg-[#111622] border border-slate-800 space-y-2">
-              <h4 className="font-display font-bold text-sm text-white">
-                Release Decades Explored
-              </h4>
-              <div className="grid grid-cols-4 gap-2 text-center font-mono">
-                <div className="p-2 bg-slate-900 rounded-xl">
-                  <span className="text-amber-400 font-bold block">1980-90s</span>
-                  <span className="text-slate-400 text-[10px]">1 title</span>
-                </div>
-                <div className="p-2 bg-slate-900 rounded-xl">
-                  <span className="text-amber-400 font-bold block">2000s</span>
-                  <span className="text-slate-400 text-[10px]">2 titles</span>
-                </div>
-                <div className="p-2 bg-slate-900 rounded-xl">
-                  <span className="text-amber-400 font-bold block">2010s</span>
-                  <span className="text-slate-400 text-[10px]">3 titles</span>
-                </div>
-                <div className="p-2 bg-slate-900 rounded-xl">
-                  <span className="text-amber-400 font-bold block">2020s</span>
-                  <span className="text-slate-400 text-[10px]">5 titles</span>
-                </div>
+                  })
+                )}
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* SWAP STAR 4 MODAL */}
+      {/* MODAL 1: PICK TOP 3 ANIME VIA LIVE API */}
       {isSwapStar4Open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="fixed inset-0 bg-black/85 backdrop-blur-sm"
             onClick={() => setIsSwapStar4Open(false)}
           />
-          <div className="relative z-10 w-full max-w-sm bg-[#111622] border border-amber-400/40 rounded-3xl p-5 shadow-2xl space-y-3 text-xs">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 className="font-bold text-sm text-white">
-                Swap Star 4 Slot #{(swapSlotIndex || 0) + 1}
-              </h3>
+          <div className="relative z-10 w-full max-w-md max-h-[85vh] bg-[#10141E] border border-amber-400/50 rounded-3xl p-5 shadow-2xl flex flex-col overflow-hidden text-xs">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                  <Star className="w-4 h-4 fill-amber-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white">
+                    Pick Favorite #{((swapSlotIndex ?? 0) + 1)}
+                  </h3>
+                  <p className="text-[10px] text-slate-400">Search any anime across live AniList API</p>
+                </div>
+              </div>
               <button
                 onClick={() => setIsSwapStar4Open(false)}
                 className="p-1 text-slate-400 hover:text-white"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-slate-400">Select which anime to showcase:</p>
-
-            <div className="space-y-1.5 max-h-60 overflow-y-auto">
-              {animeList.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => handleSwapStar4(a.id)}
-                  className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-left transition-colors"
-                >
-                  <img
-                    src={a.coverImage}
-                    alt={getAnimeTitle(a)}
-                    referrerPolicy="no-referrer"
-                    className="w-8 h-11 object-cover rounded"
-                  />
-                  <div>
-                    <p className="font-bold text-white text-xs">{getAnimeTitle(a)}</p>
-                    <p className="text-[10px] text-amber-400 font-mono">★ {a.score.toFixed(1)}</p>
-                  </div>
-                </button>
-              ))}
+            {/* Live API Search Input */}
+            <div className="pt-3 pb-2 shrink-0">
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-800 focus-within:border-amber-400 transition-colors">
+                <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search title (e.g. Frieren, Naruto, Bleach, Attack on Titan)..."
+                  className="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
+                  autoFocus
+                />
+                {isSearchingApi ? (
+                  <Loader2 className="w-4 h-4 text-amber-400 animate-spin shrink-0" />
+                ) : searchQuery ? (
+                  <button onClick={() => setSearchQuery('')} className="text-slate-400 hover:text-white">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                ) : null}
+              </div>
             </div>
+
+            {/* Results List */}
+            <div className="flex-1 overflow-y-auto space-y-1.5 py-2 pr-1">
+              {searchQuery.trim() ? (
+                apiSearchResults.length > 0 ? (
+                  apiSearchResults.map((a) => (
+                    <button
+                      key={a.id}
+                      onClick={() => handleSelectTopAnime(a)}
+                      className="w-full flex items-center gap-3 p-2 rounded-xl bg-slate-900 hover:bg-slate-800/90 text-left transition-colors border border-transparent hover:border-amber-400/30 group"
+                    >
+                      <img
+                        src={a.coverImage}
+                        alt={getAnimeTitle(a)}
+                        referrerPolicy="no-referrer"
+                        className="w-10 h-14 object-cover rounded-lg shrink-0 border border-slate-800"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-white text-xs truncate group-hover:text-amber-300 transition-colors">
+                          {getAnimeTitle(a)}
+                        </p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          {a.year} · {a.format} · {a.episodes} Ep
+                        </p>
+                        <span className="inline-block mt-1 font-mono text-[10px] text-amber-400 font-bold">
+                          ★ {a.score.toFixed(1)} / 5.0
+                        </span>
+                      </div>
+                    </button>
+                  ))
+                ) : !isSearchingApi ? (
+                  <div className="py-8 text-center text-slate-500">
+                    No anime found matching "{searchQuery}"
+                  </div>
+                ) : null
+              ) : (
+                /* Curated Quick Picks from Local Cache */
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2 px-1">
+                    Quick Curated Picks
+                  </span>
+                  <div className="space-y-1.5">
+                    {animeList.map((a) => (
+                      <button
+                        key={a.id}
+                        onClick={() => handleSelectTopAnime(a)}
+                        className="w-full flex items-center gap-3 p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-left transition-colors group"
+                      >
+                        <img
+                          src={a.coverImage}
+                          alt={getAnimeTitle(a)}
+                          referrerPolicy="no-referrer"
+                          className="w-9 h-12 object-cover rounded-lg shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-white text-xs truncate group-hover:text-amber-300">
+                            {getAnimeTitle(a)}
+                          </p>
+                          <p className="text-[10px] text-slate-400">{a.year} · {a.format}</p>
+                        </div>
+                        <span className="font-mono text-xs text-amber-400 font-bold">
+                          ★ {a.score.toFixed(1)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Clear Slot Option */}
+            {swapSlotIndex !== null && userProfile.star4?.[swapSlotIndex] && (
+              <div className="pt-2 border-t border-slate-800 shrink-0">
+                <button
+                  onClick={(e) => {
+                    handleRemoveTopAnime(swapSlotIndex, e);
+                    setIsSwapStar4Open(false);
+                  }}
+                  className="w-full py-2 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 hover:bg-rose-500/25 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Clear Slot #{swapSlotIndex + 1}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* EDIT PROFILE MODAL */}
+      {/* MODAL 2: EDIT PROFILE & AVATAR & BANNER */}
       {isEditingProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="fixed inset-0 bg-black/85 backdrop-blur-sm"
             onClick={() => setIsEditingProfile(false)}
           />
-          <div className="relative z-10 w-full max-w-sm bg-[#111622] border border-slate-800 rounded-3xl p-5 space-y-4 text-xs">
-            <h3 className="font-bold text-sm text-white">Edit Profile</h3>
-            <div>
-              <label className="text-slate-400 font-semibold block mb-1">Display Name</label>
-              <input
-                type="text"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
-              />
-            </div>
-            <div>
-              <label className="text-slate-400 font-semibold block mb-1">Bio</label>
-              <textarea
-                rows={3}
-                value={editBio}
-                onChange={(e) => setEditBio(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
-              />
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
+          <div className="relative z-10 w-full max-w-md max-h-[88vh] bg-[#10141E] border border-slate-800 rounded-3xl p-5 shadow-2xl flex flex-col overflow-hidden text-xs">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+              <h3 className="font-bold text-sm text-white">Edit Profile & Imagery</h3>
               <button
                 onClick={() => setIsEditingProfile(false)}
-                className="px-3 py-1.5 rounded-xl text-slate-400 hover:text-white"
+                className="p-1 text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Sub-Tabs: Info / Avatar / Banner */}
+            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 my-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setEditTab('info')}
+                className={`flex-1 py-1.5 font-bold rounded-lg transition-colors ${
+                  editTab === 'info' ? 'bg-amber-400 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Profile Info
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditTab('avatar')}
+                className={`flex-1 py-1.5 font-bold rounded-lg transition-colors ${
+                  editTab === 'avatar' ? 'bg-amber-400 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Avatar Picture
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditTab('banner')}
+                className={`flex-1 py-1.5 font-bold rounded-lg transition-colors ${
+                  editTab === 'banner' ? 'bg-amber-400 text-slate-950 shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Cover Banner
+              </button>
+            </div>
+
+            {/* Scrollable Form Body */}
+            <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+              {/* TAB A: PROFILE INFO */}
+              {editTab === 'info' && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-1">Display Name</label>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-1">Pronouns</label>
+                    <input
+                      type="text"
+                      value={editPronouns}
+                      onChange={(e) => setEditPronouns(e.target.value)}
+                      placeholder="e.g. they/them, she/her, he/him"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-1">Bio & Tastes</label>
+                    <textarea
+                      rows={3}
+                      value={editBio}
+                      onChange={(e) => setEditBio(e.target.value)}
+                      placeholder="What kinds of anime do you love? Favorite directors or studios?"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-1">Website / Link</label>
+                    <input
+                      type="text"
+                      value={editWebsite}
+                      onChange={(e) => setEditWebsite(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB B: AVATAR PICTURE EDITING */}
+              {editTab === 'avatar' && (
+                <div className="space-y-4">
+                  {/* Live Avatar Preview */}
+                  <div className="flex flex-col items-center justify-center p-4 bg-slate-900/60 rounded-2xl border border-slate-800">
+                    <div className="w-20 h-20 rounded-full p-1 bg-gradient-to-tr from-amber-400 to-purple-500 mb-2 shadow-lg">
+                      <UserAvatar
+                        src={editAvatar}
+                        name={editName}
+                        size="xl"
+                        className="w-full h-full"
+                      />
+                    </div>
+                    <span className="text-xs text-slate-300 font-bold">Avatar Preview</span>
+                  </div>
+
+                  {/* Upload from Local Device */}
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-1.5">
+                      Upload from Computer / Phone
+                    </label>
+                    <input
+                      ref={avatarFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarFileUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => avatarFileInputRef.current?.click()}
+                      className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-semibold flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <Upload className="w-4 h-4 text-amber-400" />
+                      <span>Choose Image File...</span>
+                    </button>
+                  </div>
+
+                  {/* Preset Avatars */}
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-2">
+                      Or Choose Anime Character Preset
+                    </label>
+                    <div className="grid grid-cols-6 gap-2">
+                      {AVATAR_PRESETS.map((p) => (
+                        <button
+                          key={p.name}
+                          type="button"
+                          onClick={() => setEditAvatar(p.url)}
+                          className={`aspect-square rounded-full overflow-hidden border-2 transition-transform ${
+                            editAvatar === p.url
+                              ? 'border-amber-400 scale-110 shadow-md ring-2 ring-amber-400/40'
+                              : 'border-slate-700 opacity-70 hover:opacity-100'
+                          }`}
+                          title={p.name}
+                        >
+                          <img
+                            src={p.url}
+                            alt={p.name}
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Direct Image URL */}
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-1">
+                      Or Paste Image URL
+                    </label>
+                    <input
+                      type="url"
+                      value={editAvatar}
+                      onChange={(e) => setEditAvatar(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB C: BANNER EDITING */}
+              {editTab === 'banner' && (
+                <div className="space-y-4">
+                  {/* Live Banner Preview */}
+                  <div className="rounded-2xl overflow-hidden border border-slate-800 h-28 bg-slate-900 relative">
+                    <img
+                      src={editBanner}
+                      alt="Banner Preview"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2.5 pointer-events-none">
+                      <span className="text-[11px] font-bold text-white drop-shadow">Banner Preview</span>
+                    </div>
+                  </div>
+
+                  {/* Upload Banner */}
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-1.5">
+                      Upload from Computer / Phone
+                    </label>
+                    <input
+                      ref={bannerFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBannerFileUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => bannerFileInputRef.current?.click()}
+                      className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-semibold flex items-center justify-center gap-2 transition-colors"
+                    >
+                      <Upload className="w-4 h-4 text-amber-400" />
+                      <span>Choose Banner File...</span>
+                    </button>
+                  </div>
+
+                  {/* Preset Banners */}
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-2">
+                      Or Choose Anime Preset Banner
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {BANNER_PRESETS.map((b) => (
+                        <button
+                          key={b.name}
+                          type="button"
+                          onClick={() => setEditBanner(b.url)}
+                          className={`h-14 rounded-xl overflow-hidden border-2 relative transition-all ${
+                            editBanner === b.url
+                              ? 'border-amber-400 ring-2 ring-amber-400/40'
+                              : 'border-slate-800 opacity-70 hover:opacity-100'
+                          }`}
+                        >
+                          <img
+                            src={b.url}
+                            alt={b.name}
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover"
+                          />
+                          <span className="absolute bottom-1 left-1.5 text-[9px] font-bold text-white bg-black/70 px-1 rounded">
+                            {b.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Direct Banner URL */}
+                  <div>
+                    <label className="text-slate-400 font-semibold block mb-1">
+                      Or Paste Banner Image URL
+                    </label>
+                    <input
+                      type="url"
+                      value={editBanner}
+                      onChange={(e) => setEditBanner(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="pt-3 border-t border-slate-800 flex justify-end gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsEditingProfile(false)}
+                className="px-4 py-2 rounded-xl text-slate-400 hover:text-white"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleSaveProfile}
-                className="px-4 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-bold hover:bg-amber-300"
+                className="px-5 py-2 rounded-xl bg-amber-400 text-slate-950 font-bold hover:bg-amber-300 transition-colors"
               >
-                Save
+                Save Changes
               </button>
             </div>
           </div>

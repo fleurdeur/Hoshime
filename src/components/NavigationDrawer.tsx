@@ -374,7 +374,7 @@ export const NavigationDrawer: React.FC = () => {
             </div>
           </div>
 
-          <div className="h-px bg-slate-800/80 my-2" />
+
 
           {/* Settings */}
           <button

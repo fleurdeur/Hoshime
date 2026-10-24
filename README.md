@@ -1,172 +1,108 @@
-# Hoshime
+# Hoshime (星アニメ) — Native Android Application
+### Built with Kotlin, Jetpack Compose (Material 3), and C/C++ (NDK + CMake)
 
-![GitHub stars](https://img.shields.io/github/stars/fleurdeur/Hoshime?style=for-the-badge&logo=github) ![GitHub forks](https://img.shields.io/github/forks/fleurdeur/Hoshime?style=for-the-badge&logo=github) ![GitHub issues](https://img.shields.io/github/issues/fleurdeur/Hoshime?style=for-the-badge&logo=github) ![Last commit](https://img.shields.io/github/last-commit/fleurdeur/Hoshime?style=for-the-badge&logo=github)
-
-## 📑 Table of Contents
-
-- [Description](#description)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Quick Start](#quick-start)
-- [Environment Variables](#environment-variables)
-- [Key Dependencies](#key-dependencies)
-- [Available Scripts](#available-scripts)
-- [Project Structure](#project-structure)
-- [Development Setup](#development-setup)
-- [Contributors](#contributors)
-- [Contributing](#contributing)
-
-## 📝 Description
-
-Represents star ratings and the stellar world of anime tracking.
-
-## 🛠️ Tech Stack
-
-![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) ![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-
-## 🏗️ Architecture
-
-A high-level view of how the main pieces fit together:
-
-```mermaid
-flowchart TD
-    User["👤 User / Browser"]
-    FE["🖼️ React Frontend"]
-    User --> FE
-    API["⚙️ Express API"]
-    FE --> API
-```
-
-## ⚡ Quick Start
-
-```bash
-
-# 1. Clone the repository
-git clone https://github.com/fleurdeur/Hoshime.git
-
-# 2. Install dependencies
-npm install
-
-# 3. Configure environment
-cp .env.example .env   # then fill in the values
-
-# 4. Start the dev server
-npm run dev
-```
-
-## 🔑 Environment Variables
-
-The following environment variables are required (see `.env.example`):
-
-```bash
-GEMINI_API_KEY=
-APP_URL=
-```
-
-## 📦 Key Dependencies
-
-```
-@google/genai: ^2.4.0
-@tailwindcss/vite: ^4.3.3
-@vitejs/plugin-react: ^6.1.1
-lucide-react: ^0.546.0
-react: ^19.0.1
-react-dom: ^19.0.1
-vite: ^8.3.0
-express: ^4.21.2
-dotenv: ^17.2.3
-motion: ^12.23.24
-```
-
-## 🚀 Available Scripts
-
-- **dev** — `npm run dev`
-- **build** — `npm run build`
-- **preview** — `npm run preview`
-- **clean** — `npm run clean`
-- **lint** — `npm run lint`
-
-## 📁 Project Structure
-
-```
-.
-├── .env.example
-├── index.html
-├── metadata.json
-├── package.json
-├── src
-│   ├── App.tsx
-│   ├── components
-│   │   ├── AndroidFrame.tsx
-│   │   ├── AnimeImage.tsx
-│   │   ├── BottomNavBar.tsx
-│   │   ├── ImportExportModal.tsx
-│   │   ├── LoggerModal.tsx
-│   │   ├── NavigationDrawer.tsx
-│   │   ├── SearchFilterSheet.tsx
-│   │   ├── ShareStoryModal.tsx
-│   │   ├── StarRating.tsx
-│   │   ├── TopAppBar.tsx
-│   │   └── WidgetsModal.tsx
-│   ├── context
-│   │   └── AppContext.tsx
-│   ├── data
-│   │   └── animeDatabase.ts
-│   ├── index.css
-│   ├── main.tsx
-│   ├── services
-│   │   └── animeApi.ts
-│   ├── types
-│   │   └── anime.ts
-│   └── views
-│       ├── AnimeDetailView.tsx
-│       ├── DiscoverView.tsx
-│       ├── HomeFeedView.tsx
-│       ├── ListsCommunityView.tsx
-│       ├── NotificationCenterView.tsx
-│       ├── OnboardingView.tsx
-│       ├── ProfileView.tsx
-│       └── SettingsView.tsx
-├── tsconfig.json
-└── vite.config.ts
-```
-
-## 🛠️ Development Setup
-
-### Node.js / JavaScript
-1. Install Node.js (v18+ recommended)
-2. Install dependencies: `npm install` (or `yarn` / `pnpm install` / `bun install`)
-3. Start the dev server: see the **Quick Start** above
-
-## 👥 Contributors
-
-Thanks to everyone who has contributed to this project:
-
-<p align="left">
-<a href="https://github.com/fleurdeur" title="fleurdeur"><img src="https://avatars.githubusercontent.com/u/319274093?v=4&s=64" width="64" height="64" alt="fleurdeur" style="border-radius:50%" /></a>
-</p>
-
-[See the full list of contributors →](https://github.com/fleurdeur/Hoshime/graphs/contributors)
-
-## 👥 Contributing
-
-Contributions are welcome! Here's the standard flow:
-
-1. **Fork** the repository
-2. **Clone** your fork: `git clone https://github.com/fleurdeur/Hoshime.git`
-3. **Branch**: `git checkout -b feature/your-feature`
-4. **Commit**: `git commit -m 'feat: add some feature'`
-5. **Push**: `git push origin feature/your-feature`
-6. **Open** a pull request
-
-Please follow the existing code style and include tests for new behavior where applicable.
+This directory contains the complete native Android codebase for **Hoshime**, the anime star diary and review platform.
 
 ---
 
-<div align="center">
+## Architecture Overview
 
-[![Made with ReadmeBuddy](https://img.shields.io/badge/Made%20with-ReadmeBuddy-8B5CFF?style=for-the-badge&logo=markdown&logoColor=white)](https://readmebuddy.com)
+```
+.
+├── settings.gradle.kts                     # Gradle root settings & module definitions
+├── build.gradle.kts                        # Root project build configuration
+├── gradle.properties                       # AndroidX, JVM optimization flags
+├── gradle/
+│   ├── libs.versions.toml                  # Version Catalog (Kotlin 2.0.21, AGP 8.7.2, Compose BOM)
+│   └── wrapper/gradle-wrapper.properties   # Gradle 8.10.2 distribution
+└── app/
+    ├── build.gradle.kts                    # App build config (CMake + Compose + NDK ABIs)
+    ├── proguard-rules.pro                  # JNI Native & Kotlin proguard keeps
+    └── src/main/
+        ├── AndroidManifest.xml             # Android Application Manifest
+        ├── cpp/                            # C/C++ Native NDK Rating Engine
+        │   ├── CMakeLists.txt              # CMake build script for libhoshime-native.so
+        │   ├── hoshime_engine.h            # C++ Engine header definitions
+        │   ├── hoshime_engine.cpp          # High-performance Bayesian, SIMD & FNV-1a algorithms
+        │   └── native-lib.cpp              # JNI Bridge functions linking C++ to Kotlin
+        ├── java/com/hoshime/app/
+        │   ├── HoshimeApplication.kt       # Application class (loads native lib)
+        │   ├── MainActivity.kt             # Jetpack Compose Edge-to-Edge Activity
+        │   ├── nativebridge/
+        │   │   └── NativeRatingEngine.kt   # Kotlin JNI bindings to C++ library
+        │   ├── model/
+        │   │   ├── Anime.kt                # Anime data models & vectors
+        │   │   └── DiaryEntry.kt           # Diary & profile models
+        │   ├── data/
+        │   │   └── AnimeRepository.kt      # Repository interacting with C++ Native Engine
+        │   ├── viewmodel/
+        │   │   └── AnimeViewModel.kt       # Compose ViewModel & live benchmark
+        │   └── ui/
+        │       ├── theme/                  # Starry dark theme, Color.kt, Type.kt, Theme.kt
+        │       ├── components/             # StarRatingSelector, HoshimeTopBar, HoshimeBottomBar
+        │       └── screens/                # HomeScreen, DiscoverScreen, AnimeDetailScreen,
+        │                                   # DiaryLoggerScreen, ProfileScreen, NativeEngineScreen
+        └── res/values/
+            ├── strings.xml
+            ├── colors.xml
+            └── themes.xml
+```
 
-<sub>Generate beautiful READMEs in seconds → <a href="https://readmebuddy.com">readmebuddy.com</a></sub>
+---
 
-</div>
+## C/C++ Native Engine (NDK + CMake)
+
+Located in `app/src/main/cpp/`, compiled as `libhoshime-native.so`:
+
+1. **Bayesian Score Calculation**:
+   $$\text{Score} = \left(\frac{v}{v + m}\right) \cdot R + \left(\frac{m}{v + m}\right) \cdot C$$
+   Normalized between 0.5 and 5.0 stars for robust outlier rejection.
+
+2. **Vectorized Cosine Similarity**:
+   Computes high-speed cosine distance between user anime taste vectors and anime genre vectors in C++.
+
+3. **Shannon Entropy & Variance Analysis**:
+   Calculates star rating diversity and dispersion across user diaries.
+
+4. **FNV-1a 64-bit Checksum**:
+   Cryptographic integrity hash ensuring tamper-evident offline anime diary records.
+
+---
+
+## Jetpack Compose UI (Material 3)
+
+- **StarRatingSelector**: Fluid 0.5 to 5.0 star selector with half-star granularity.
+- **HomeScreen**: Diary feed, seasonal highlights, and native C++ statistics banner.
+- **DiscoverScreen**: Bayesian-rated catalog with instantaneous search and filtering.
+- **AnimeDetailScreen**: Detailed synopsis, studio info, and entry point to star logger.
+- **DiaryLoggerScreen**: Full diary recording with episode tracker, notes, and live C++ checksum.
+- **NativeEngineScreen**: Interactive benchmark demonstrating C++ NDK vs JVM execution speeds.
+
+---
+
+## How to Build the APK
+
+### Requirements:
+- Android Studio Ladybug / Meerkat (or newer)
+- Android SDK 35+
+- Android NDK (Side by side 25+ or 26+)
+- CMake 3.22.1+
+
+### CLI Build Commands:
+```bash
+# Build Debug APK with C++ NDK shared libraries:
+./gradlew assembleDebug
+
+# Build Release APK:
+./gradlew assembleRelease
+```
+The resulting debug APK is output to:
+`app/build/outputs/apk/debug/app-debug.apk`
+
+---
+
+## Standalone Android Package
+A complete standalone archive containing all build configuration, wrappers, C++ NDK sources, and Kotlin Jetpack Compose code is bundled in:
+- `hoshime-android-project.tar.gz`
+- `public/hoshime-android-project.tar.gz`
+

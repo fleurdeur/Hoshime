@@ -29,20 +29,28 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
-  if (deviceMode === 'responsive') {
+  const isStandalone =
+    typeof window !== 'undefined' &&
+    (window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true ||
+      document.referrer.includes('android-app://'));
+
+  if (deviceMode === 'responsive' || isStandalone) {
     return (
       <div className="min-h-screen bg-[#0B0E14] text-white flex flex-col">
-        {/* Floating Toggle to switch to Android Mockup Frame */}
-        <div className="fixed top-3 right-4 z-50 hidden sm:block">
-          <button
-            onClick={() => setDeviceMode('android-frame')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-700/80 text-xs font-semibold text-amber-400 hover:bg-slate-800 shadow-xl transition-all"
-            title="Switch to Android Pixel Frame"
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>Pixel Frame View</span>
-          </button>
-        </div>
+        {/* Floating Toggle to switch to Android Mockup Frame on desktop only */}
+        {!isStandalone && (
+          <div className="fixed top-3 right-4 z-50 hidden sm:block">
+            <button
+              onClick={() => setDeviceMode('android-frame')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-700/80 text-xs font-semibold text-amber-400 hover:bg-slate-800 shadow-xl transition-all"
+              title="Switch to Android Pixel Frame"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>Pixel Frame View</span>
+            </button>
+          </div>
+        )}
         {children}
       </div>
     );

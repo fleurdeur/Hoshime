@@ -15,6 +15,7 @@ export const ShareStoryModal: React.FC = () => {
   const { isShareStoryOpen, closeShareStory, shareTargetLog, getAnimeTitle } = useApp();
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   if (!isShareStoryOpen || !shareTargetLog) return null;
 
@@ -23,8 +24,6 @@ export const ShareStoryModal: React.FC = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   const handleSimulatedDownload = () => {
     setDownloading(true);

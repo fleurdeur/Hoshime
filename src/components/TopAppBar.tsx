@@ -59,6 +59,7 @@ export const TopAppBar: React.FC = () => {
 
       {/* Right Slot: Search & Notifications & Profile */}
       <div className="flex items-center gap-1">
+
         <button
           onClick={() => setIsSearchOpen(true)}
           className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-300 hover:text-amber-400 active:scale-95 transition-colors"
